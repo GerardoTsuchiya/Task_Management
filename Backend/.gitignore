@@ -1,6 +1,7 @@
 # compiled output
 /dist
 /node_modules
+/.pnpm-store
 /build
 
 # Logs
@@ -14,6 +15,9 @@ lerna-debug.log*
 
 # OS
 .DS_Store
+
+# Archives
+*.zip
 
 # Tests
 /coverage
