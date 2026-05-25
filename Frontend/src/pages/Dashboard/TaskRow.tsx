@@ -128,7 +128,7 @@ export default function TaskRow({ task, onToggleStatus, onViewClick, onEditClick
           )}
         </div>
       </div>
-      <div style={{ display: "flex", alignItems: "center", flex: 8 }}>
+      <div style={{ display: "flex", alignItems: "center", flex: 8, minWidth: 0, overflow: "hidden" }}>
 
         <span style={{
           color: descColor, opacity: 0.6, fontFamily: "'Sansation', sans-serif", fontSize: 13,
@@ -148,16 +148,17 @@ export default function TaskRow({ task, onToggleStatus, onViewClick, onEditClick
 
         <span style={{
           color: isOverdue ? "#EF9A9A" : COLORS.textMuted, fontFamily: "'Sansation', sans-serif",
-          fontSize: 13, flex: 1.8, minWidth: 0, textAlign: "left", textDecoration
+          fontSize: 13, flex: 1.8, minWidth: 0, paddingRight: "12px", overflow: "hidden",
+          textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "left", textDecoration
         }}>
           {formatDateToLatam(task.dueDate)}
         </span>
 
-        <div style={{ flex: 1.2, minWidth: 0, opacity: isCompleted ? 0.5 : 1 }}>
+        <div style={{ flex: 1.2, minWidth: 0, paddingRight: "12px", opacity: isCompleted ? 0.5 : 1 }}>
           <PriorityBadge p={task.priority} />
         </div>
 
-        <div style={{ flex: 1, display: "flex", justifyContent: "center", gap: 16 }}>
+        <div style={{ flex: 1, minWidth: 96, display: "flex", justifyContent: "center", gap: 16 }}>
           <button 
             title="Visualizar Tarea" 
             onClick={(e) => { e.stopPropagation(); onViewClick(task); }}
