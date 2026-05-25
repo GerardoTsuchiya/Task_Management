@@ -42,7 +42,7 @@ export default function RegisterPage({ onRegisterSuccess, onGoLogin }: RegisterP
       onRegisterSuccess(data.accessToken, data.user);
     } catch (err: any) {
       console.error(err);
-      setError("Error al registrar el usuario o correo en uso.");
+      setError("Este correo ya está vinculado a una cuenta.");
     }
   }
 

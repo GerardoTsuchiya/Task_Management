@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { Pencil, Trash2 } from "lucide-react";
 import { COLORS } from "../../constants/colors.ts";
 import NewTaskModal from "./NewTaskModal.tsx";
 import NewProjectModal from "./NewProjectModal.tsx";
@@ -13,6 +12,7 @@ import EditTaskModal from "./EditTaskModal.tsx";
 import DeleteTaskModal from "./DeleteTaskModal.tsx";
 import EditProjectModal from "./EditProjectModal.tsx";
 import DeleteProjectModal from "./DeleteProjectModal.tsx";
+import ProjectSidebar from "./ProjectSidebar.tsx";
 
 interface Task {
   id: number;
@@ -34,76 +34,18 @@ interface DashboardPageProps {
   onLogout: () => void;
 }
 
-function ProjectSidebarRow({ 
-  proj, 
-  isActive, 
-  onClick, 
-  onEdit, 
-  onDelete 
-}: { 
-  proj: Project; 
-  isActive: boolean; 
-  onClick: () => void; 
-  onEdit: () => void; 
-  onDelete: () => void; 
-}) {
-  const [hovered, setHovered] = useState(false);
-
-  return (
-    <div
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      onClick={onClick}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        padding: "8px 14px 8px 24px", 
-        cursor: "pointer",
-        background: isActive ? COLORS.bgSidebarActive : "transparent",
-        color: isActive ? COLORS.text : COLORS.textMuted,
-        fontFamily: "'Sansation', sans-serif", fontSize: 14, 
-        fontWeight: isActive ? 700 : 400,
-        transition: "background-color 0.15s ease"
-      }}
-    >
-      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, paddingRight: 8 }}>
-        {proj.name}
-      </span>
-
-      <div style={{ display: "flex", gap: 10, alignItems: "center", opacity: hovered ? 1 : 0, transition: "opacity 0.15s ease", flexShrink: 0 }}>
-        <button
-          title="Editar Proyecto"
-          onClick={(e) => { e.stopPropagation(); onEdit(); }}
-          style={{ background: "transparent", border: "none", color: COLORS.textMuted, cursor: "pointer", padding: 2, display: "flex" }}
-          onMouseEnter={(e) => e.currentTarget.style.color = COLORS.text}
-          onMouseLeave={(e) => e.currentTarget.style.color = COLORS.textMuted}
-        >
-          <Pencil size={13} />
-        </button>
-        <button
-          title="Eliminar Proyecto"
-          onClick={(e) => { e.stopPropagation(); onDelete(); }}
-          style={{ background: "transparent", border: "none", color: COLORS.textMuted, cursor: "pointer", padding: 2, display: "flex" }}
-          onMouseEnter={(e) => e.currentTarget.style.color = COLORS.priorityHigh}
-          onMouseLeave={(e) => e.currentTarget.style.color = COLORS.textMuted}
-        >
-          <Trash2 size={13} />
-        </button>
-      </div>
-    </div>
-  );
-}
-
 export default function DashboardPage({ user, onLogout }: DashboardPageProps) {
   const [projects, setProjects] = useState<Project[]>([]);
+  // Iniciamos en null para que "Todas las tareas" sea la vista por defecto
   const [activeProject, setActiveProject] = useState<Project | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [showProjectModal, setShowProjectModal] = useState(false);
+  
   const [viewingTask, setViewingTask] = useState<Task | null>(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
+  
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
 
@@ -111,9 +53,7 @@ export default function DashboardPage({ user, onLogout }: DashboardPageProps) {
     try {
       const projs = await api.get("/projects");
       setProjects(projs);
-      if (projs.length > 0 && !activeProject) {
-        setActiveProject(projs[0]);
-      }
+      // REMOVIDO: Ya no forzamos la selección del primer proyecto de forma automática
       const allTasks = await api.get("/tasks");
       setTasks(allTasks);
     } catch (err) {
@@ -161,8 +101,8 @@ export default function DashboardPage({ user, onLogout }: DashboardPageProps) {
     setTasks(prev => prev.filter(t => t.projectId !== id));
 
     if (activeProject?.id === id) {
-      const remaining = previousProjects.filter(p => p.id !== id);
-      setActiveProject(remaining.length > 0 ? remaining[0] : null);
+      // Si eliminamos el proyecto en el que estábamos parados, volvemos a la vista general
+      setActiveProject(null);
     }
 
     try {
@@ -265,6 +205,7 @@ export default function DashboardPage({ user, onLogout }: DashboardPageProps) {
     }
   }
 
+  // Filtrado lógico: si activeProject es null, filteredTasks toma TODO el array completo de tareas
   const filteredTasks = activeProject 
     ? tasks.filter((t) => t.projectId === activeProject.id)
     : tasks;
@@ -292,23 +233,15 @@ export default function DashboardPage({ user, onLogout }: DashboardPageProps) {
       <Navbar onLogout={onLogout} user={user} />
 
       <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
-        <div style={{ width: 220, background: COLORS.bgSidebar, display: "flex", flexDirection: "column", padding: "16px 0", borderRight: "1px solid #222", overflow: "auto", flexShrink: 0 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 16px 4px" }}>
-            <p style={{ color: COLORS.textMuted, fontFamily: "'Sansation', sans-serif", fontSize: 13, fontWeight: 700, margin: 0, letterSpacing: 0.5 }}>PROYECTOS</p>
-            <button onClick={() => setShowProjectModal(true)} title="Nuevo Proyecto" style={{ background: "transparent", border: "none", color: COLORS.textMuted, fontSize: 26, cursor: "pointer", padding: 0 }}>+</button>
-          </div>
-          
-          {projects.map((proj) => (
-            <ProjectSidebarRow
-              key={proj.id}
-              proj={proj}
-              isActive={activeProject?.id === proj.id}
-              onClick={() => setActiveProject(proj)}
-              onEdit={() => setEditingProject(proj)}
-              onDelete={() => setProjectToDelete(proj)}
-            />
-          ))}
-        </div>
+        
+        <ProjectSidebar 
+          projects={projects}
+          activeProject={activeProject}
+          onSelectProject={setActiveProject} // Maneja perfectamente objetos del proyecto o null
+          onCreateProjectClick={() => setShowProjectModal(true)}
+          onEditProjectClick={setEditingProject}
+          onDeleteProjectClick={setProjectToDelete}
+        />
 
         <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "auto", background: COLORS.bg }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 24px 8px" }}>

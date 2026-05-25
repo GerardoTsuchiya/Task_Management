@@ -24,7 +24,7 @@ export default function LoginPage({ onLoginSuccess, onGoRegister }: LoginPagePro
       const data = await api.post('/auth/login', { email, password });
       onLoginSuccess(data.accessToken, data.user);
     } catch (err: any) {
-      setError("Credenciales inválidas o error de conexión.");
+      setError("Credenciales inválidas");
     }
   }
 
