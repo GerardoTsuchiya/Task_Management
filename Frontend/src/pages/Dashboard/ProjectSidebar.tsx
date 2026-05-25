@@ -166,7 +166,7 @@ interface ProjectSidebarRowProps {
   onEdit: () => void;
   onDelete: () => void;
   onInvite: () => void;
-  onLeave: () => void;
+  onLeave: (proj: Project) => void; // Cambiado para recibir el objeto proyecto entero
 }
 
 function ProjectSidebarRow({
@@ -246,9 +246,7 @@ function ProjectSidebarRow({
               title="Salirse del proyecto"
               onClick={(e) => {
                 e.stopPropagation();
-                if (window.confirm(`¿Estás seguro de que te quieres salir de "${proj.name}"?`)) {
-                  onLeave();
-                }
+                onLeave(proj); // Eliminamos el window.confirm y mandamos el proyecto al Dashboard
               }}
               style={{ background: "transparent", border: "none", color: COLORS.textMuted, cursor: "pointer", padding: 2, display: "flex" }}
               onMouseEnter={(e) => (e.currentTarget.style.color = COLORS.priorityHigh)}
@@ -318,7 +316,7 @@ interface ProjectSidebarProps {
   onEditProjectClick: (proj: Project) => void;
   onDeleteProjectClick: (proj: Project) => void;
   onInviteMemberClick: (proj: Project) => void;
-  onLeaveProjectClick: (proj: Project) => void;
+  onLeaveProjectClick: (proj: Project) => void; // Modificado la firma para pasar todo el objeto
 }
 
 export default function ProjectSidebar({
@@ -395,7 +393,7 @@ export default function ProjectSidebar({
             onEdit={() => onEditProjectClick(proj)}
             onDelete={() => onDeleteProjectClick(proj)}
             onInvite={() => onInviteMemberClick(proj)}
-            onLeave={() => onLeaveProjectClick(proj)}
+            onLeave={() => onLeaveProjectClick(proj)} // Pasa limpio hacia el handler
           />
         );
       })}

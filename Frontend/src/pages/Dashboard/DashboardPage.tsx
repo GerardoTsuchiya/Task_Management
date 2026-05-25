@@ -15,6 +15,7 @@ import DeleteProjectModal from "./DeleteProjectModal.tsx";
 import InviteMemberModal from "./InviteMemberModal.tsx";
 import ProjectSidebar from "./ProjectSidebar.tsx";
 import ProjectCharts from "./ProjectCharts.tsx";
+import LeaveProjectModal from "./LeaveProjectModal.tsx";
 
 interface Task {
   id: number;
@@ -59,6 +60,7 @@ export default function DashboardPage({ user, onLogout }: DashboardPageProps) {
   
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
+  const [projectToLeave, setProjectToLeave] = useState<Project | null>(null);
   const [invitingProject, setInvitingProject] = useState<Project | null>(null);
   const [filterAssignedToMe, setFilterAssignedToMe] = useState(false);
   const [sortByPriority, setSortByPriority] = useState(false);
@@ -304,7 +306,7 @@ export default function DashboardPage({ user, onLogout }: DashboardPageProps) {
           onEditProjectClick={setEditingProject}
           onDeleteProjectClick={setProjectToDelete}
           onInviteMemberClick={setInvitingProject}
-          onLeaveProjectClick={(proj) => handleLeaveProject(proj.id)}
+          onLeaveProjectClick={setProjectToLeave}
         />
         
         <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "auto", background: COLORS.bg }}>
@@ -440,6 +442,17 @@ export default function DashboardPage({ user, onLogout }: DashboardPageProps) {
           onConfirm={handleDeleteProject} 
         />
       )}
+      <LeaveProjectModal
+        isOpen={!!projectToLeave}
+        project={projectToLeave}
+        onClose={() => setProjectToLeave(null)}
+        onConfirm={() => {
+          if (projectToLeave) {
+            handleLeaveProject(projectToLeave.id);
+            setProjectToLeave(null);
+          }
+        }}
+      />
 
       {showModal && (
         <NewTaskModal
