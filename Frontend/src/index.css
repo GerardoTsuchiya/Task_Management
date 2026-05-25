@@ -1,0 +1,50 @@
+@import url('https://fonts.googleapis.com/css2?family=Sansation:wght@300;400;700&display=swap');
+
+:root {
+  --sans: 'Sansation', sans-serif;
+  --heading: 'Sansation', sans-serif;
+  
+  font-family: var(--sans);
+  font-size: 16px;
+  background-color: #333333;
+  color: #ffffff;
+  color-scheme: dark;
+  
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  font-family: 'Sansation', sans-serif !important;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #333333;
+  min-height: 100vh;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--heading);
+  margin: 0;
+  color: #ffffff;
+}
+
+p {
+  margin: 0;
+}
+
+input, button, select, textarea {
+  font-family: var(--sans);
+}
