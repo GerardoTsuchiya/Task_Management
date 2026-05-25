@@ -34,15 +34,19 @@ export default function RegisterPage({ onRegisterSuccess, onGoLogin }: RegisterP
     }
 
     try {
-      const data = await api.post('/auth/register', { 
-        email: correo, 
-        name: name, 
-        password: password 
+      const data = await api.post('/auth/register', {
+        email: correo.trim(),
+        name: name.trim(),
+        password: password
       });
       onRegisterSuccess(data.accessToken, data.user);
     } catch (err: any) {
       console.error(err);
-      setError("Este correo ya está vinculado a una cuenta.");
+      if (err?.status === 409) {
+        setError("Este correo ya está vinculado a una cuenta.");
+      } else {
+        setError("Ocurrió un error. Intenta de nuevo.");
+      }
     }
   }
 

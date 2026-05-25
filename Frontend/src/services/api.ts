@@ -11,6 +11,22 @@ function getHeaders(): HeadersInit {
   return headers;
 }
 
+class ApiError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
+  }
+}
+
+async function handleResponse(res: Response) {
+  if (!res.ok) {
+    const text = await res.text();
+    throw new ApiError(text, res.status);
+  }
+  return res.status !== 204 ? res.json() : null;
+}
+
 export const api = {
   async post(endpoint: string, body: any) {
     const res = await fetch(`${BASE_URL}${endpoint}`, {
@@ -18,8 +34,7 @@ export const api = {
       headers: getHeaders(),
       body: JSON.stringify(body),
     });
-    if (!res.ok) throw new Error(await res.text());
-    return res.json();
+    return handleResponse(res);
   },
 
   async get(endpoint: string) {
@@ -27,8 +42,7 @@ export const api = {
       method: 'GET',
       headers: getHeaders(),
     });
-    if (!res.ok) throw new Error(await res.text());
-    return res.json();
+    return handleResponse(res);
   },
 
   async patch(endpoint: string, body?: any) {
@@ -37,15 +51,14 @@ export const api = {
       headers: getHeaders(),
       body: body ? JSON.stringify(body) : undefined,
     });
-    if (!res.ok) throw new Error(await res.text());
-    return res.json();
+    return handleResponse(res);
   },
+
   async delete(endpoint: string) {
     const res = await fetch(`${BASE_URL}${endpoint}`, {
       method: 'DELETE',
       headers: getHeaders(),
     });
-    if (!res.ok) throw new Error(await res.text());
-    return res.status !== 204 ? res.json() : null;
+    return handleResponse(res);
   },
 };
