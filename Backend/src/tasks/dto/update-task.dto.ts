@@ -43,4 +43,11 @@ export class UpdateTaskDto {
   @IsInt()
   @Min(1)
   projectId?: number | null;
+
+  @IsOptional()
+  @Transform(({ value }) => (value === null ? null : value))
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  assignedToId?: number | null;
 }

@@ -14,6 +14,7 @@ import type { AuthenticatedUser } from '../common/types/authenticated-user.type'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
+import { InviteMemberDto } from './dto/invite-member.dto';
 import { ProjectsService } from './projects.service';
 
 @Controller('projects')
@@ -57,5 +58,31 @@ export class ProjectsController {
     @Param('id', ParseIntPipe) id: number,
   ) {
     return this.projectsService.remove(user.id, id);
+  }
+
+  @Get(':id/members')
+  getMembers(
+    @GetUser() user: AuthenticatedUser,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.projectsService.getMembers(user.id, id);
+  }
+
+  @Post(':id/members')
+  inviteMember(
+    @GetUser() user: AuthenticatedUser,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: InviteMemberDto,
+  ) {
+    return this.projectsService.inviteMember(user.id, id, dto);
+  }
+
+  @Delete(':id/members/:memberId')
+  removeMember(
+    @GetUser() user: AuthenticatedUser,
+    @Param('id', ParseIntPipe) id: number,
+    @Param('memberId', ParseIntPipe) memberId: number,
+  ) {
+    return this.projectsService.removeMember(user.id, id, memberId);
   }
 }

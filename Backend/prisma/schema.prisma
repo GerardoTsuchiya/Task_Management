@@ -1,12 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
-  output   = "../node_modules/@prisma/client/.prisma/client"
 }
 
 datasource db {
@@ -14,15 +7,18 @@ datasource db {
 }
 
 model User {
-  id        Int       @id @default(autoincrement())
-  email     String    @unique
-  name      String
-  password  String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  projects  Project[]
-  tasks     Task[]
-  labels    Label[]
+  id            Int             @id @default(autoincrement())
+  email         String          @unique
+  name          String
+  password      String
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  ownedProjects Project[]
+  memberOf      ProjectMember[]
+  ownedTasks    Task[]          @relation("OwnedTasks")
+  assignedTasks Task[]          @relation("AssignedTasks")
+  labels        Label[]
+  notifications Notification[]
 }
 
 enum TaskPriority {
@@ -39,39 +35,74 @@ enum TaskStatus {
 }
 
 model Project {
-  id        Int      @id @default(autoincrement())
+  id        Int             @id @default(autoincrement())
   name      String
   color     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
   userId    Int
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   tasks     Task[]
+  members   ProjectMember[]
 
   @@unique([userId, name])
   @@index([userId])
 }
 
+model ProjectMember {
+  id        Int      @id @default(autoincrement())
+  projectId Int
+  userId    Int
+  role      String   @default("member")
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@index([projectId])
+  @@index([userId])
+  @@index([status])
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  type      String
+  title     String
+  body      String
+  read      Boolean  @default(false)
+  data      Json?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([read])
+}
+
 model Task {
-  id          Int          @id @default(autoincrement())
-  title       String
-  description String?
-  dueDate     DateTime?
-  priority    TaskPriority @default(MEDIUM)
-  status      TaskStatus   @default(PENDING)
-  completed   Boolean      @default(false)
-  completedAt DateTime?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  userId      Int
-  projectId   Int?
-  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  project     Project?     @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  subtasks    Subtask[]
-  taskLabels  TaskLabel[]
+  id           Int          @id @default(autoincrement())
+  title        String
+  description  String?
+  dueDate      DateTime?
+  priority     TaskPriority @default(MEDIUM)
+  status       TaskStatus   @default(PENDING)
+  completed    Boolean      @default(false)
+  completedAt  DateTime?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  userId       Int
+  projectId    Int?
+  assignedToId Int?
+  user         User         @relation("OwnedTasks", fields: [userId], references: [id], onDelete: Cascade)
+  assignedTo   User?        @relation("AssignedTasks", fields: [assignedToId], references: [id], onDelete: SetNull)
+  project      Project?     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  subtasks     Subtask[]
+  taskLabels   TaskLabel[]
 
   @@index([userId])
   @@index([projectId])
+  @@index([assignedToId])
   @@index([dueDate])
   @@index([priority])
   @@index([status])
