@@ -11,6 +11,7 @@ interface Task {
   dueDate?: string;
   projectId: number | null;
   project?: { id: number; name: string } | null;
+  assignedTo?: { id: number; name: string; email: string } | null;
 }
 
 interface TaskRowProps {
@@ -20,6 +21,7 @@ interface TaskRowProps {
   onEditClick: (task: Task) => void;
   onDeleteClick: (task: Task) => void;
   isOverdue?: boolean;
+  canEditDelete?: boolean;
 }
 
 function formatDateToLatam(dateStr?: string): string {
@@ -64,7 +66,7 @@ function StatusCircle({ status, isOverdue, isRowHovered }: { status: string; isO
   );
 }
 
-export default function TaskRow({ task, onToggleStatus, onViewClick, onEditClick, onDeleteClick, isOverdue }: TaskRowProps) {
+export default function TaskRow({ task, onToggleStatus, onViewClick, onEditClick, onDeleteClick, isOverdue, canEditDelete = true }: TaskRowProps) {
   const [isClickZoneHovered, setIsClickZoneHovered] = useState(false);
   const isCompleted = task.status === "COMPLETED";
 
@@ -91,11 +93,10 @@ export default function TaskRow({ task, onToggleStatus, onViewClick, onEditClick
         onMouseEnter={() => setIsClickZoneHovered(true)}
         onMouseLeave={() => setIsClickZoneHovered(false)}
         style={{ 
-          display: "flex", 
-          alignItems: "center", 
-          gap: 14, 
-          flex: 1, 
-          paddingRight: "16px", 
+          display: "flex",
+          alignItems: "center",
+          gap: 14,
+          flex: 2,
           minWidth: 0,
           cursor: "pointer",
           height: "100%",
@@ -127,28 +128,36 @@ export default function TaskRow({ task, onToggleStatus, onViewClick, onEditClick
           )}
         </div>
       </div>
-      <div style={{ display: "flex", alignItems: "center", gap: 0, width: "680px", flexShrink: 0 }}>
-        
-        <span style={{ 
-          color: descColor, opacity: 0.6, fontFamily: "'Sansation', sans-serif", fontSize: 13, 
-          width: "240px", paddingRight: "20px", overflow: "hidden", textOverflow: "ellipsis", 
-          whiteSpace: "nowrap", textAlign: "left", textDecoration 
+      <div style={{ display: "flex", alignItems: "center", flex: 8 }}>
+
+        <span style={{
+          color: descColor, opacity: 0.6, fontFamily: "'Sansation', sans-serif", fontSize: 13,
+          flex: 2.2, minWidth: 0, paddingRight: "12px", overflow: "hidden", textOverflow: "ellipsis",
+          whiteSpace: "nowrap", textAlign: "left", textDecoration
         }}>
           {task.description || "--"}
         </span>
 
-        <span style={{ 
-          color: isOverdue ? "#EF9A9A" : COLORS.textMuted, fontFamily: "'Sansation', sans-serif", 
-          fontSize: 13, width: "160px", textAlign: "left", textDecoration 
+        <span style={{
+          color: COLORS.textMuted, fontFamily: "'Sansation', sans-serif", fontSize: 13,
+          flex: 1.8, minWidth: 0, paddingRight: "12px", overflow: "hidden", textOverflow: "ellipsis",
+          whiteSpace: "nowrap", textAlign: "left", textDecoration, opacity: isCompleted ? 0.5 : 0.85
+        }}>
+          {task.assignedTo ? task.assignedTo.name : "--"}
+        </span>
+
+        <span style={{
+          color: isOverdue ? "#EF9A9A" : COLORS.textMuted, fontFamily: "'Sansation', sans-serif",
+          fontSize: 13, flex: 1.8, minWidth: 0, textAlign: "left", textDecoration
         }}>
           {formatDateToLatam(task.dueDate)}
         </span>
 
-        <div style={{ width: "160px", textAlign: "left", opacity: isCompleted ? 0.5 : 1 }}>
+        <div style={{ flex: 1.2, minWidth: 0, opacity: isCompleted ? 0.5 : 1 }}>
           <PriorityBadge p={task.priority} />
         </div>
 
-        <div style={{ width: "120px", display: "flex", justifyContent: "center", gap: 16 }}>
+        <div style={{ flex: 1, display: "flex", justifyContent: "center", gap: 16 }}>
           <button 
             title="Visualizar Tarea" 
             onClick={(e) => { e.stopPropagation(); onViewClick(task); }}
@@ -169,45 +178,37 @@ export default function TaskRow({ task, onToggleStatus, onViewClick, onEditClick
             <Eye size={18} />
           </button>
           
-          <button 
-            title="Editar Tarea" 
-            onClick={(e) => { e.stopPropagation(); onEditClick(task); }}
-            style={{ 
-              background: "transparent", border: "none", cursor: "pointer", padding: "4px", 
-              display: "flex", alignItems: "center", justifyContent: "center", color: COLORS.textMuted,
-              transition: "color 0.2s ease, transform 0.1s ease" 
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = COLORS.text;
-              e.currentTarget.style.transform = "scale(1.1)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = COLORS.textMuted;
-              e.currentTarget.style.transform = "scale(1)";
-            }}
-          >
-            <Pencil size={16} />
-          </button>
+          {canEditDelete && (
+            <button
+              title="Editar Tarea"
+              onClick={(e) => { e.stopPropagation(); onEditClick(task); }}
+              style={{
+                background: "transparent", border: "none", cursor: "pointer", padding: "4px",
+                display: "flex", alignItems: "center", justifyContent: "center", color: COLORS.textMuted,
+                transition: "color 0.2s ease, transform 0.1s ease"
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = COLORS.text; e.currentTarget.style.transform = "scale(1.1)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = COLORS.textMuted; e.currentTarget.style.transform = "scale(1)"; }}
+            >
+              <Pencil size={16} />
+            </button>
+          )}
 
-          <button 
-            title="Eliminar Tarea" 
-            onClick={(e) => { e.stopPropagation(); onDeleteClick(task); }}
-            style={{ 
-              background: "transparent", border: "none", cursor: "pointer", padding: "4px", 
-              display: "flex", alignItems: "center", justifyContent: "center", color: COLORS.textMuted,
-              transition: "color 0.2s ease, transform 0.1s ease" 
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = COLORS.priorityHigh;
-              e.currentTarget.style.transform = "scale(1.1)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = COLORS.textMuted;
-              e.currentTarget.style.transform = "scale(1)";
-            }}
-          >
-            <Trash2 size={16} />
-          </button>
+          {canEditDelete && (
+            <button
+              title="Eliminar Tarea"
+              onClick={(e) => { e.stopPropagation(); onDeleteClick(task); }}
+              style={{
+                background: "transparent", border: "none", cursor: "pointer", padding: "4px",
+                display: "flex", alignItems: "center", justifyContent: "center", color: COLORS.textMuted,
+                transition: "color 0.2s ease, transform 0.1s ease"
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = COLORS.priorityHigh; e.currentTarget.style.transform = "scale(1.1)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = COLORS.textMuted; e.currentTarget.style.transform = "scale(1)"; }}
+            >
+              <Trash2 size={16} />
+            </button>
+          )}
 
         </div>
       </div>

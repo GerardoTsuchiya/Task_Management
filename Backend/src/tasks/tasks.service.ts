@@ -62,8 +62,8 @@ export class TasksService {
       where: {
         id,
         OR: [
-          { userId },
-          { assignedToId: userId },
+          { projectId: null, userId },
+          { projectId: null, assignedToId: userId },
           {
             projectId: { not: null },
             project: {
@@ -83,7 +83,7 @@ export class TasksService {
   }
 
   async update(userId: number, id: number, updateTaskDto: UpdateTaskDto) {
-    const task = await this.ensureTaskBelongsToUser(userId, id);
+    const task = await this.ensureTaskEditableByUser(userId, id);
 
     const projectId = updateTaskDto.projectId !== undefined
       ? updateTaskDto.projectId
@@ -130,13 +130,7 @@ export class TasksService {
   }
 
   async remove(userId: number, id: number) {
-    const task = await this.prisma.task.findFirst({
-      where: { id, userId },
-      select: { id: true },
-    });
-
-    if (!task) throw new NotFoundException('Task not found');
-
+    await this.ensureTaskEditableByUser(userId, id);
     return this.prisma.task.delete({ where: { id } });
   }
 
@@ -214,11 +208,31 @@ export class TasksService {
     });
   }
 
+  private async ensureTaskEditableByUser(userId: number, id: number) {
+    const task = await this.prisma.task.findFirst({
+      where: {
+        id,
+        OR: [
+          { userId },
+          { projectId: { not: null }, project: { userId } },
+        ],
+      },
+      select: { id: true, projectId: true },
+    });
+
+    if (!task) throw new NotFoundException('Task not found');
+    return task;
+  }
+
   private async ensureTaskBelongsToUser(userId: number, id: number) {
     const task = await this.prisma.task.findFirst({
       where: {
         id,
-        OR: [{ userId }, { assignedToId: userId }],
+        OR: [
+          { userId, projectId: null },                        // tarea personal propia
+          { assignedToId: userId },                           // asignada al usuario
+          { projectId: { not: null }, project: { userId } }, // dueño del proyecto
+        ],
       },
       select: { id: true, projectId: true },
     });
@@ -267,8 +281,8 @@ export class TasksService {
   ): Prisma.TaskWhereInput {
     const where: Prisma.TaskWhereInput = {
       OR: [
-        { userId },
-        { assignedToId: userId },
+        { projectId: null, userId },
+        { projectId: null, assignedToId: userId },
         {
           projectId: { not: null },
           project: {

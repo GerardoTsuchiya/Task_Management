@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -182,13 +183,41 @@ export class ProjectsService {
     if (!project) throw new NotFoundException('Project not found');
   }
 
-  private async ensureProjectBelongsToUser(userId: number, id: number) {
-    const project = await this.prisma.project.findFirst({
-      where: { id, userId },
-      select: { id: true },
+  async leaveProject(userId: number, projectId: number) {
+    const project = await this.prisma.project.findUnique({
+      where: { id: projectId },
+      select: { id: true, userId: true },
     });
 
     if (!project) throw new NotFoundException('Project not found');
+    if (project.userId === userId) {
+      throw new BadRequestException('Project owners cannot leave their own project');
+    }
+
+    const member = await this.prisma.projectMember.findUnique({
+      where: { projectId_userId: { projectId, userId } },
+    });
+
+    if (!member) throw new NotFoundException('You are not a member of this project');
+
+    await this.prisma.task.updateMany({
+      where: { projectId, assignedToId: userId },
+      data: { assignedToId: null },
+    });
+
+    return this.prisma.projectMember.delete({
+      where: { projectId_userId: { projectId, userId } },
+    });
+  }
+
+  private async ensureProjectBelongsToUser(userId: number, id: number) {
+    const project = await this.prisma.project.findUnique({
+      where: { id },
+      select: { id: true, userId: true },
+    });
+
+    if (!project) throw new NotFoundException('Project not found');
+    if (project.userId !== userId) throw new ForbiddenException('You are not the owner of this project');
   }
 
   private handleProjectNameConflict(error: unknown) {

@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Backend — Documentación Técnica</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --bg2: #161b22;
+    --bg3: #1e2530;
+    --border: #30363d;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --green: #3fb950;
+    --blue: #58a6ff;
+    --orange: #d29922;
+    --red: #f85149;
+    --purple: #bc8cff;
+    --teal: #39d353;
+    --yellow: #e3b341;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 15px; line-height: 1.6; }
+  a { color: var(--blue); text-decoration: none; }
+
+  /* Layout */
+  .page { display: flex; min-height: 100vh; }
+  nav { width: 260px; background: var(--bg2); border-right: 1px solid var(--border); padding: 24px 0; position: sticky; top: 0; height: 100vh; overflow-y: auto; flex-shrink: 0; }
+  nav h2 { color: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; padding: 0 20px; margin-bottom: 8px; margin-top: 20px; }
+  nav h2:first-child { margin-top: 0; }
+  nav a { display: block; padding: 6px 20px; color: var(--muted); font-size: 13px; transition: color 0.15s; }
+  nav a:hover { color: var(--text); }
+  nav .logo { padding: 0 20px 20px; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
+  nav .logo span { font-size: 16px; font-weight: 700; color: var(--text); }
+  nav .logo p { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  main { flex: 1; padding: 48px 64px; max-width: 1000px; }
+
+  /* Headings */
+  h1 { font-size: 32px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  h2 { font-size: 22px; font-weight: 700; color: var(--text); margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  h3 { font-size: 17px; font-weight: 600; color: var(--blue); margin: 32px 0 12px; }
+  h4 { font-size: 14px; font-weight: 600; color: var(--orange); margin: 20px 0 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+  p { margin-bottom: 12px; color: var(--muted); }
+  p strong { color: var(--text); }
+  ul, ol { padding-left: 20px; margin-bottom: 12px; color: var(--muted); }
+  li { margin-bottom: 4px; }
+  li strong { color: var(--text); }
+
+  /* Code */
+  code { background: var(--bg3); border: 1px solid var(--border); border-radius: 4px; padding: 2px 6px; font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 13px; color: var(--purple); }
+  pre { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 20px 24px; overflow-x: auto; margin: 16px 0; }
+  pre code { background: none; border: none; padding: 0; font-size: 13px; color: var(--text); line-height: 1.7; }
+
+  /* Syntax coloring inside pre */
+  .kw { color: #ff7b72; }   /* keywords */
+  .cl { color: #79c0ff; }   /* class names */
+  .fn { color: #d2a8ff; }   /* function names */
+  .st { color: #a5d6ff; }   /* strings */
+  .cm { color: #8b949e; font-style: italic; } /* comments */
+  .dc { color: #3fb950; }   /* decorators */
+  .nm { color: #ffa657; }   /* numbers / enum values */
+
+  /* Callouts */
+  .callout { border-radius: 8px; padding: 14px 18px; margin: 16px 0; display: flex; gap: 12px; align-items: flex-start; }
+  .callout-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .callout p { margin: 0; font-size: 14px; }
+  .info  { background: rgba(88,166,255,0.08); border: 1px solid rgba(88,166,255,0.3); }
+  .warn  { background: rgba(210,153,34,0.08); border: 1px solid rgba(210,153,34,0.3); }
+  .tip   { background: rgba(63,185,80,0.08);  border: 1px solid rgba(63,185,80,0.3); }
+  .info p { color: #a5d6ff; }
+  .warn p { color: #e3b341; }
+  .tip  p { color: #7ee787; }
+
+  /* Flow diagram */
+  .flow { display: flex; flex-direction: column; gap: 0; margin: 20px 0; }
+  .flow-step { display: flex; align-items: stretch; gap: 16px; }
+  .flow-left { display: flex; flex-direction: column; align-items: center; width: 36px; flex-shrink: 0; }
+  .flow-circle { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+  .flow-line { width: 2px; background: var(--border); flex: 1; min-height: 20px; }
+  .flow-body { padding: 6px 0 20px; flex: 1; }
+  .flow-body h4 { margin: 0 0 4px; font-size: 14px; text-transform: none; letter-spacing: 0; }
+  .flow-body p { margin: 0; font-size: 13px; }
+  .flow-body code { font-size: 12px; }
+  .c-fe  { background: rgba(88,166,255,0.15);  color: #58a6ff; }
+  .c-mw  { background: rgba(210,153,34,0.15);  color: #e3b341; }
+  .c-ctrl { background: rgba(188,140,255,0.15); color: #d2a8ff; }
+  .c-svc { background: rgba(63,185,80,0.15);   color: #3fb950; }
+  .c-db  { background: rgba(248,81,73,0.15);   color: #f85149; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px; }
+  th { background: var(--bg3); color: var(--muted); font-weight: 600; text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  td { padding: 9px 14px; border-bottom: 1px solid rgba(48,54,61,0.6); vertical-align: top; }
+  td code { font-size: 12px; }
+  tr:last-child td { border-bottom: none; }
+  .method { font-weight: 700; font-size: 11px; padding: 2px 7px; border-radius: 4px; }
+  .GET    { background: rgba(63,185,80,0.15);   color: #3fb950; }
+  .POST   { background: rgba(88,166,255,0.15);  color: #58a6ff; }
+  .PATCH  { background: rgba(210,153,34,0.15);  color: #e3b341; }
+  .DELETE { background: rgba(248,81,73,0.15);   color: #f85149; }
+
+  /* Badges */
+  .badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
+  .badge-guard  { background: rgba(210,153,34,0.2); color: #e3b341; border: 1px solid rgba(210,153,34,0.4); }
+  .badge-pipe   { background: rgba(63,185,80,0.2);  color: #3fb950; border: 1px solid rgba(63,185,80,0.4); }
+  .badge-inject { background: rgba(88,166,255,0.2); color: #58a6ff; border: 1px solid rgba(88,166,255,0.4); }
+
+  /* Schema boxes */
+  .schema-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+  .schema-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+  .schema-box h4 { margin: 0 0 10px; color: var(--yellow); font-size: 13px; }
+  .field { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; border-bottom: 1px solid rgba(48,54,61,0.4); font-size: 12px; }
+  .field:last-child { border-bottom: none; }
+  .field-name { color: var(--text); font-family: monospace; }
+  .field-type { color: var(--purple); font-family: monospace; }
+  .field-note { color: var(--muted); font-size: 11px; }
+
+  /* Relation arrows */
+  .relations { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin: 16px 0; }
+  .rel { display: flex; align-items: center; gap: 10px; padding: 6px 0; font-size: 13px; }
+  .rel-from { color: var(--yellow); font-family: monospace; font-weight: 600; min-width: 120px; }
+  .rel-arrow { color: var(--muted); }
+  .rel-to { color: var(--blue); font-family: monospace; }
+  .rel-label { color: var(--muted); font-size: 12px; margin-left: auto; }
+
+  /* Section anchor */
+  section { scroll-margin-top: 24px; }
+
+  /* Subtitle */
+  .subtitle { color: var(--muted); font-size: 16px; margin-bottom: 32px; }
+  .tag { display: inline-block; background: rgba(63,185,80,0.1); border: 1px solid rgba(63,185,80,0.3); color: var(--green); font-size: 12px; padding: 2px 10px; border-radius: 20px; margin-right: 6px; }
+
+  @media (max-width: 900px) {
+    nav { display: none; }
+    main { padding: 24px 20px; }
+    .schema-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- ─── SIDEBAR ─────────────────────────────────────────── -->
+<nav>
+  <div class="logo">
+    <span>Backend Docs</span>
+    <p>Task Management API</p>
+  </div>
+
+  <h2>Introducción</h2>
+  <a href="#arquitectura">Arquitectura general</a>
+  <a href="#stack">Stack tecnológico</a>
+  <a href="#estructura">Estructura de módulos</a>
+
+  <h2>Base de Datos</h2>
+  <a href="#schema">Esquema Prisma</a>
+  <a href="#relaciones">Relaciones entre modelos</a>
+
+  <h2>Ciclo de una Petición</h2>
+  <a href="#lifecycle">Viaje Front → DB</a>
+  <a href="#auth-flow">Autenticación JWT</a>
+  <a href="#validation">Validación DTOs</a>
+
+  <h2>Flujos Detallados</h2>
+  <a href="#flow-register">Registro de usuario</a>
+  <a href="#flow-login">Login</a>
+  <a href="#flow-create-task">Crear tarea</a>
+  <a href="#flow-complete">Completar tarea</a>
+  <a href="#flow-invite">Invitar a proyecto</a>
+  <a href="#flow-accept">Aceptar invitación</a>
+  <a href="#flow-visibility">Visibilidad de tareas</a>
+
+  <h2>Referencia</h2>
+  <a href="#endpoints">Todos los endpoints</a>
+  <a href="#errores">Manejo de errores</a>
+  <a href="#cors">CORS y arranque</a>
+</nav>
+
+<!-- ─── MAIN ────────────────────────────────────────────── -->
+<main>
+
+  <h1>Documentación Técnica del Backend</h1>
+  <p class="subtitle">
+    <span class="tag">NestJS</span>
+    <span class="tag">Prisma v7</span>
+    <span class="tag">PostgreSQL</span>
+    <span class="tag">JWT</span>
+  </p>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <section id="arquitectura">
+  <h2>Arquitectura General</h2>
+  <p>El backend sigue la arquitectura <strong>MVC en capas</strong> que promueve NestJS: cada funcionalidad vive en su propio módulo con tres responsabilidades separadas.</p>
+
+  <div class="flow">
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-circle c-fe">C</div><div class="flow-line"></div></div>
+      <div class="flow-body">
+        <h4 style="color:#58a6ff">Controller (Enrutador)</h4>
+        <p>Recibe la petición HTTP. Extrae parámetros, cuerpo y usuario. <strong>No contiene lógica de negocio</strong>. Delega inmediatamente al Service.</p>
+        <p>Ejemplo: <code>TasksController</code> recibe <code>POST /tasks</code> y llama a <code>tasksService.create(userId, dto)</code>.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-circle c-svc">S</div><div class="flow-line"></div></div>
+      <div class="flow-body">
+        <h4 style="color:#3fb950">Service (Lógica de Negocio)</h4>
+        <p>Toda la lógica vive aquí: validaciones de acceso, reglas de negocio, construcción de queries. <strong>Llama a Prisma</strong> para interactuar con la BD.</p>
+        <p>Ejemplo: <code>TasksService.create()</code> verifica si el usuario pertenece al proyecto antes de crear la tarea.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-circle c-db">P</div></div>
+      <div class="flow-body">
+        <h4 style="color:#f85149">PrismaService (Base de Datos)</h4>
+        <p>Extiende <code>PrismaClient</code>. Es el único punto de contacto con PostgreSQL. Gestiona la conexión (<code>onModuleInit/$connect</code>) y la cierra (<code>onModuleDestroy/$disconnect</code>).</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout info">
+    <span class="callout-icon">💡</span>
+    <p>NestJS usa <strong>Inyección de Dependencias</strong>: el <code>Service</code> se inyecta en el <code>Controller</code> a través del constructor. Esto lo hace el framework automáticamente al arrancar — tú solo declaras qué necesitas.</p>
+  </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <section id="stack">
+  <h2>Stack Tecnológico</h2>
+  <table>
+    <tr><th>Componente</th><th>Tecnología</th><th>¿Para qué sirve?</th></tr>
+    <tr><td><strong>Framework</strong></td><td>NestJS 10</td><td>Framework de Node.js con arquitectura en módulos, decoradores y DI</td></tr>
+    <tr><td><strong>Lenguaje</strong></td><td>TypeScript</td><td>Tipado estático, detecta errores antes de ejecutar</td></tr>
+    <tr><td><strong>ORM</strong></td><td>Prisma v7</td><td>Genera un cliente tipado para consultar la BD desde TS</td></tr>
+    <tr><td><strong>Base de Datos</strong></td><td>PostgreSQL (Supabase)</td><td>BD relacional en la nube</td></tr>
+    <tr><td><strong>Driver BD</strong></td><td>@prisma/adapter-pg</td><td>Adaptador para conectar Prisma con el driver de pg</td></tr>
+    <tr><td><strong>Autenticación</strong></td><td>JWT + Passport</td><td>Tokens para sesiones sin estado (stateless)</td></tr>
+    <tr><td><strong>Contraseñas</strong></td><td>bcrypt</td><td>Hashea las contraseñas con sal antes de guardarlas</td></tr>
+    <tr><td><strong>Validación</strong></td><td>class-validator + class-transformer</td><td>Valida y transforma el body de las peticiones automáticamente</td></tr>
+    <tr><td><strong>Documentación</strong></td><td>Swagger (@nestjs/swagger)</td><td>UI interactiva en <code>/api/docs</code> con todos los endpoints</td></tr>
+  </table>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <section id="estructura">
+  <h2>Estructura de Módulos</h2>
+  <p>Cada módulo es autónomo: declara su Controller, Service y opcionalmente exporta lo que otros módulos pueden usar.</p>
+
+  <pre><code>Backend/src/
+├── main.ts                  <span class="cm">← Punto de entrada, arranca el servidor</span>
+├── app.module.ts            <span class="cm">← Módulo raíz que importa todos los demás</span>
+├── <span class="cl">auth/</span>                    <span class="cm">← Registro, login, JWT</span>
+│   ├── auth.controller.ts
+│   ├── auth.service.ts
+│   ├── jwt.strategy.ts      <span class="cm">← Valida el token en cada petición protegida</span>
+│   ├── jwt-auth.guard.ts    <span class="cm">← Guard que aplica la estrategia JWT</span>
+│   └── dto/                 <span class="cm">← LoginDto, RegisterDto</span>
+├── <span class="cl">tasks/</span>                   <span class="cm">← CRUD de tareas</span>
+│   ├── tasks.controller.ts
+│   ├── tasks.service.ts
+│   └── dto/                 <span class="cm">← CreateTaskDto, UpdateTaskDto, TaskQueryDto</span>
+├── <span class="cl">projects/</span>                <span class="cm">← CRUD de proyectos + gestión de miembros</span>
+│   ├── projects.controller.ts
+│   ├── projects.service.ts
+│   └── dto/
+├── <span class="cl">notifications/</span>           <span class="cm">← Sistema de notificaciones e invitaciones</span>
+│   ├── notifications.controller.ts
+│   └── notifications.service.ts
+├── <span class="cl">subtasks/</span>                <span class="cm">← Subtareas dentro de una tarea</span>
+├── <span class="cl">labels/</span>                  <span class="cm">← Etiquetas personalizadas</span>
+├── <span class="cl">prisma/</span>
+│   └── prisma.service.ts    <span class="cm">← Wrapper de PrismaClient, inyectable globalmente</span>
+└── <span class="cl">common/</span>
+    ├── decorators/
+    │   └── get-user.decorator.ts  <span class="cm">← @GetUser() extrae el usuario del request</span>
+    └── types/
+        └── authenticated-user.type.ts</code></pre>
+
+  <div class="callout info">
+    <span class="callout-icon">🔑</span>
+    <p><strong>PrismaModule</strong> está marcado como <code>isGlobal: true</code>, lo que significa que <code>PrismaService</code> está disponible en <strong>todos los módulos</strong> sin necesidad de importarlo explícitamente en cada uno.</p>
+  </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <section id="schema">
+  <h2>Esquema de la Base de Datos</h2>
+  <p>Prisma define los modelos en <code>prisma/schema.prisma</code>. Cada modelo se convierte en una tabla en PostgreSQL.</p>
+
+  <div class="schema-grid">
+    <div class="schema-box">
+      <h4>User</h4>
+      <div class="field"><span class="field-name">id</span><span class="field-type">Int</span><span class="field-note">PK autoincrement</span></div>
+      <div class="field"><span class="field-name">email</span><span class="field-type">String</span><span class="field-note">@unique</span></div>
+      <div class="field"><span class="field-name">name</span><span class="field-type">String</span><span class="field-note"></span></div>
+      <div class="field"><span class="field-name">password</span><span class="field-type">String</span><span class="field-note">hasheada con bcrypt</span></div>
+      <div class="field"><span class="field-name">createdAt</span><span class="field-type">DateTime</span><span class="field-note">@default(now())</span></div>
+      <div class="field"><span class="field-name">updatedAt</span><span class="field-type">DateTime</span><span class="field-note">@updatedAt</span></div>
+    </div>
+    <div class="schema-box">
+      <h4>Project</h4>
+      <div class="field"><span class="field-name">id</span><span class="field-type">Int</span><span class="field-note">PK autoincrement</span></div>
+      <div class="field"><span class="field-name">name</span><span class="field-type">String</span><span class="field-note"></span></div>
+      <div class="field"><span class="field-name">color</span><span class="field-type">String?</span><span class="field-note">opcional</span></div>
+      <div class="field"><span class="field-name">userId</span><span class="field-type">Int</span><span class="field-note">FK → User (dueño)</span></div>
+      <div class="field"><span class="field-name">createdAt</span><span class="field-type">DateTime</span><span class="field-note"></span></div>
+      <div class="field"><span class="field-name">—</span><span class="field-type"></span><span class="field-note">@@unique([userId, name])</span></div>
+    </div>
+    <div class="schema-box">
+      <h4>Task</h4>
+      <div class="field"><span class="field-name">id</span><span class="field-type">Int</span><span class="field-note">PK autoincrement</span></div>
+      <div class="field"><span class="field-name">title</span><span class="field-type">String</span><span class="field-note"></span></div>
+      <div class="field"><span class="field-name">description</span><span class="field-type">String?</span><span class="field-note">opcional</span></div>
+      <div class="field"><span class="field-name">dueDate</span><span class="field-type">DateTime?</span><span class="field-note">opcional</span></div>
+      <div class="field"><span class="field-name">priority</span><span class="field-type">TaskPriority</span><span class="field-note">LOW/MEDIUM/HIGH/URGENT</span></div>
+      <div class="field"><span class="field-name">status</span><span class="field-type">TaskStatus</span><span class="field-note">PENDING/IN_PROGRESS/COMPLETED</span></div>
+      <div class="field"><span class="field-name">completed</span><span class="field-type">Boolean</span><span class="field-note">@default(false)</span></div>
+      <div class="field"><span class="field-name">completedAt</span><span class="field-type">DateTime?</span><span class="field-note">se llena al completar</span></div>
+      <div class="field"><span class="field-name">userId</span><span class="field-type">Int</span><span class="field-note">FK → User (creador)</span></div>
+      <div class="field"><span class="field-name">projectId</span><span class="field-type">Int?</span><span class="field-note">FK → Project (opcional)</span></div>
+      <div class="field"><span class="field-name">assignedToId</span><span class="field-type">Int?</span><span class="field-note">FK → User (asignado)</span></div>
+    </div>
+    <div class="schema-box">
+      <h4>ProjectMember</h4>
+      <div class="field"><span class="field-name">id</span><span class="field-type">Int</span><span class="field-note">PK autoincrement</span></div>
+      <div class="field"><span class="field-name">projectId</span><span class="field-type">Int</span><span class="field-note">FK → Project</span></div>
+      <div class="field"><span class="field-name">userId</span><span class="field-type">Int</span><span class="field-note">FK → User (invitado)</span></div>
+      <div class="field"><span class="field-name">role</span><span class="field-type">String</span><span class="field-note">"member" por defecto</span></div>
+      <div class="field"><span class="field-name">status</span><span class="field-type">String</span><span class="field-note">"pending" o "accepted"</span></div>
+      <div class="field"><span class="field-name">—</span><span class="field-type"></span><span class="field-note">@@unique([projectId, userId])</span></div>
+    </div>
+    <div class="schema-box">
+      <h4>Notification</h4>
+      <div class="field"><span class="field-name">id</span><span class="field-type">Int</span><span class="field-note">PK autoincrement</span></div>
+      <div class="field"><span class="field-name">userId</span><span class="field-type">Int</span><span class="field-note">FK → User (destinatario)</span></div>
+      <div class="field"><span class="field-name">type</span><span class="field-type">String</span><span class="field-note">"project_invitation"</span></div>
+      <div class="field"><span class="field-name">title</span><span class="field-type">String</span><span class="field-note"></span></div>
+      <div class="field"><span class="field-name">body</span><span class="field-type">String</span><span class="field-note">texto legible</span></div>
+      <div class="field"><span class="field-name">read</span><span class="field-type">Boolean</span><span class="field-note">@default(false)</span></div>
+      <div class="field"><span class="field-name">data</span><span class="field-type">Json?</span><span class="field-note">{ memberId, projectId… }</span></div>
+    </div>
+    <div class="schema-box">
+      <h4>Subtask</h4>
+      <div class="field"><span class="field-name">id</span><span class="field-type">Int</span><span class="field-note">PK autoincrement</span></div>
+      <div class="field"><span class="field-name">title</span><span class="field-type">String</span><span class="field-note"></span></div>
+      <div class="field"><span class="field-name">completed</span><span class="field-type">Boolean</span><span class="field-note">@default(false)</span></div>
+      <div class="field"><span class="field-name">taskId</span><span class="field-type">Int</span><span class="field-note">FK → Task</span></div>
+    </div>
+  </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <section id="relaciones">
+  <h2>Relaciones entre Modelos</h2>
+
+  <div class="relations">
+    <div class="rel"><span class="rel-from">User</span><span class="rel-arrow">──1:N──▶</span><span class="rel-to">Project</span><span class="rel-label">Un usuario puede tener muchos proyectos (ownedProjects)</span></div>
+    <div class="rel"><span class="rel-from">User</span><span class="rel-arrow">──1:N──▶</span><span class="rel-to">Task</span><span class="rel-label">Como creador (OwnedTasks) y como asignado (AssignedTasks)</span></div>
+    <div class="rel"><span class="rel-from">User</span><span class="rel-arrow">──1:N──▶</span><span class="rel-to">ProjectMember</span><span class="rel-label">Membresías en proyectos ajenos</span></div>
+    <div class="rel"><span class="rel-from">User</span><span class="rel-arrow">──1:N──▶</span><span class="rel-to">Notification</span><span class="rel-label">Notificaciones recibidas</span></div>
+    <div class="rel"><span class="rel-from">Project</span><span class="rel-arrow">──1:N──▶</span><span class="rel-to">Task</span><span class="rel-label">onDelete: Cascade (borrar proyecto borra sus tareas)</span></div>
+    <div class="rel"><span class="rel-from">Project</span><span class="rel-arrow">──1:N──▶</span><span class="rel-to">ProjectMember</span><span class="rel-label">onDelete: Cascade</span></div>
+    <div class="rel"><span class="rel-from">Task</span><span class="rel-arrow">──1:N──▶</span><span class="rel-to">Subtask</span><span class="rel-label">onDelete: Cascade</span></div>
+    <div class="rel"><span class="rel-from">Task</span><span class="rel-arrow">──M:N──▶</span><span class="rel-to">Label</span><span class="rel-label">A través de TaskLabel (tabla pivote)</span></div>
+  </div>
+
+  <div class="callout warn">
+    <span class="callout-icon">⚠️</span>
+    <p><strong>Un usuario tiene DOS relaciones con Task</strong>: como <code>user</code> (el que creó la tarea, campo <code>userId</code>) y como <code>assignedTo</code> (al que se le asignó, campo <code>assignedToId</code>). Por eso en el schema se nombran explícitamente con <code>@relation("OwnedTasks")</code> y <code>@relation("AssignedTasks")</code>.</p>
+  </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <section id="lifecycle">
+  <h2>Ciclo de vida de una Petición</h2>
+  <p>Antes de que cualquier código de negocio se ejecute, NestJS pasa la petición por varias capas:</p>
+
+  <div class="flow">
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-circle c-fe">1</div><div class="flow-line"></div></div>
+      <div class="flow-body">
+        <h4 style="color:#58a6ff">Frontend → HTTP Request</h4>
+        <p>El navegador envía <code>POST http://localhost:3000/tasks</code> con el header <code>Authorization: Bearer &lt;token&gt;</code> y un JSON body.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-circle c-mw">2</div><div class="flow-line"></div></div>
+      <div class="flow-body">
+        <h4 style="color:#e3b341">CORS Middleware</h4>
+        <p>En <code>main.ts</code>, se configuró <code>app.enableCors()</code> con una expresión regular <code>/^http:\/\/localhost(:\d+)?$/</code>. Si el origen no es localhost, la petición es rechazada antes de llegar al código.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-circle c-mw">3</div><div class="flow-line"></div></div>
+      <div class="flow-body">
+        <h4 style="color:#e3b341">JwtAuthGuard <span class="badge badge-guard">Guard</span></h4>
+        <p>Todos los controllers (excepto <code>POST /auth/login</code> y <code>POST /auth/register</code>) tienen el decorador <code>@UseGuards(JwtAuthGuard)</code>. El Guard llama a <code>JwtStrategy.validate()</code>:</p>
+        <ul>
+          <li>Extrae el token del header <code>Authorization: Bearer ...</code></li>
+          <li>Verifica la firma con <code>JWT_SECRET</code></li>
+          <li>Busca el usuario en la BD con el <code>sub</code> (id) del payload</li>
+          <li>Si el usuario no existe → lanza <code>401 Unauthorized</code></li>
+          <li>Si es válido → adjunta el usuario al objeto <code>request</code></li>
+        </ul>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-circle c-mw">4</div><div class="flow-line"></div></div>
+      <div class="flow-body">
+        <h4 style="color:#e3b341">ValidationPipe <span class="badge badge-pipe">Pipe</span></h4>
+        <p>Configurado globalmente en <code>main.ts</code> con tres opciones críticas:</p>
+        <ul>
+          <li><strong>whitelist: true</strong> → elimina cualquier campo del body que no esté declarado en el DTO</li>
+          <li><strong>transform: true</strong> → convierte strings a números, instancia clases DTO</li>
+          <li><strong>forbidNonWhitelisted: true</strong> → si viene un campo extra, retorna <code>400 Bad Request</code></li>
+        </ul>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-circle c-ctrl">5</div><div class="flow-line"></div></div>
+      <div class="flow-body">
+        <h4 style="color:#d2a8ff">Controller Method</h4>
+        <p>El método correspondiente se ejecuta. Usa <code>@GetUser()</code> (decorador custom) para extraer el usuario del request, <code>@Param()</code>, <code>@Body()</code>, <code>@Query()</code>. Llama al Service.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-circle c-svc">6</div><div class="flow-line"></div></div>
+      <div class="flow-body">
+        <h4 style="color:#3fb950">Service Method</h4>
+        <p>Ejecuta validaciones de acceso, construye la query de Prisma y la ejecuta. Puede lanzar <code>NotFoundException</code>, <code>ForbiddenException</code>, etc.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-circle c-db">7</div></div>
+      <div class="flow-body">
+        <h4 style="color:#f85149">PrismaService → PostgreSQL</h4>
+        <p>Prisma genera el SQL, lo ejecuta contra Supabase y retorna los datos tipados. El resultado sube por la cadena hasta el Controller, que lo serializa a JSON y lo envía como respuesta HTTP.</p>
+      </div>
+    </div>
+  </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <section id="auth-flow">
+  <h2>Autenticación JWT en Detalle</h2>
+
+  <h3>¿Qué es JWT?</h3>
+  <p>JSON Web Token es un string codificado en base64 con tres partes: <code>header.payload.signature</code>. El servidor firma el token con un secreto (<code>JWT_SECRET</code>). Cualquier modificación al token invalida la firma.</p>
+  <p>El <strong>payload</strong> contiene: <code>{ sub: userId, email, iat (issued at), exp (expiration) }</code>.</p>
+
+  <div class="callout tip">
+    <span class="callout-icon">✅</span>
+    <p><strong>Stateless</strong>: el servidor no guarda sesiones. Cada petición lleva su propio token. El servidor solo verifica la firma — no necesita consultar una tabla de sesiones.</p>
+  </div>
+
+  <h3>JwtStrategy — Validación en cada request</h3>
+  <pre><code><span class="cm">// jwt.strategy.ts — se ejecuta en CADA petición protegida</span>
+<span class="kw">async</span> <span class="fn">validate</span>(payload: JwtPayload): Promise&lt;AuthenticatedUser&gt; {
+  <span class="cm">// payload.sub = userId guardado al hacer login</span>
+  <span class="kw">const</span> user = <span class="kw">await</span> this.prisma.user.<span class="fn">findUnique</span>({
+    where: { id: payload.sub },
+    select: { id, email, name, createdAt, updatedAt }
+  });
+  <span class="kw">if</span> (!user) <span class="kw">throw new</span> <span class="cl">UnauthorizedException</span>();
+  <span class="kw">return</span> user; <span class="cm">// se adjunta al request como req.user</span>
+}</code></pre>
+
+  <h3>@GetUser() — Decorador personalizado</h3>
+  <pre><code><span class="cm">// Extrae req.user directamente en el parámetro del controller</span>
+<span class="kw">export const</span> <span class="fn">GetUser</span> = <span class="fn">createParamDecorator</span>(
+  (data, ctx) =&gt; ctx.<span class="fn">switchToHttp</span>().<span class="fn">getRequest</span>().user
+);
+
+<span class="cm">// Uso en controller:</span>
+<span class="dc">@Post()</span>
+<span class="fn">create</span>(<span class="dc">@GetUser()</span> user: AuthenticatedUser, <span class="dc">@Body()</span> dto: CreateTaskDto) {
+  <span class="kw">return</span> this.tasksService.<span class="fn">create</span>(user.id, dto);
+}</code></pre>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <section id="validation">
+  <h2>DTOs y Validación</h2>
+  <p>Un <strong>DTO (Data Transfer Object)</strong> es una clase que define la forma del body esperado. Los decoradores de <code>class-validator</code> validan cada campo automáticamente.</p>
+
+  <pre><code><span class="cm">// create-task.dto.ts</span>
+<span class="kw">export class</span> <span class="cl">CreateTaskDto</span> {
+  <span class="dc">@IsString()</span>
+  <span class="dc">@MinLength(2)</span>
+  title!: <span class="kw">string</span>;               <span class="cm">// obligatorio, mínimo 2 chars</span>
+
+  <span class="dc">@IsOptional()</span> <span class="dc">@IsString()</span>
+  description?: <span class="kw">string</span>;          <span class="cm">// opcional</span>
+
+  <span class="dc">@IsOptional()</span> <span class="dc">@IsISO8601()</span>
+  dueDate?: <span class="kw">string</span>;              <span class="cm">// formato "2026-05-25"</span>
+
+  <span class="dc">@IsOptional()</span> <span class="dc">@IsEnum(TaskPriority)</span>
+  priority?: TaskPriority;        <span class="cm">// solo LOW/MEDIUM/HIGH/URGENT</span>
+
+  <span class="dc">@IsOptional()</span>
+  <span class="dc">@Transform(({ value }) =&gt; value === null ? null : value)</span>
+  <span class="dc">@Type(() =&gt; Number)</span> <span class="dc">@IsInt()</span> <span class="dc">@Min(1)</span>
+  projectId?: <span class="kw">number</span>;           <span class="cm">// convierte "5" → 5 automáticamente</span>
+
+  <span class="dc">@IsOptional()</span> <span class="dc">@Type(() =&gt; Number)</span> <span class="dc">@IsInt()</span> <span class="dc">@Min(1)</span>
+  assignedToId?: <span class="kw">number</span>;         <span class="cm">// id del usuario al que se asigna</span>
+}</code></pre>
+
+  <p>Si el body no cumple las reglas, el <code>ValidationPipe</code> retorna automáticamente <code>400 Bad Request</code> con un mensaje descriptivo antes de llamar al Controller.</p>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <section id="flow-register">
+  <h2>Flujo: Registro de Usuario</h2>
+
+  <div class="flow">
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-circle c-fe">1</div><div class="flow-line"></div></div>
+      <div class="flow-body">
+        <h4>Frontend</h4>
+        <p><code>POST /auth/register</code> con body: <code>{ email, name, password }</code></p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-circle c-mw">2</div><div class="flow-line"></div></div>
+      <div class="flow-body">
+        <h4>ValidationPipe valida RegisterDto</h4>
+        <p>Verifica que <code>email</code> sea válido, <code>name</code> no esté vacío y <code>password</code> tenga al menos 6 caracteres. Sin token requerido (ruta pública).</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-circle c-svc">3</div><div class="flow-line"></div></div>
+      <div class="flow-body">
+        <h4>AuthService.register()</h4>
+        <p>1. Busca si ya existe un usuario con ese email → si existe lanza <code>409 ConflictException</code>.</p>
+        <p>2. Hashea la contraseña con <code>bcrypt.hash(password, 10)</code> (el <code>10</code> es el costo/sal).</p>
+        <p>3. Crea el usuario en la BD con <code>prisma.user.create()</code>.</p>
+        <p>4. Genera un JWT con <code>jwtService.signAsync({ sub: user.id, email })</code>.</p>
+        <p>5. Retorna <code>{ accessToken, user }</code> — <strong>sin la contraseña</strong>.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-circle c-fe">4</div></div>
+      <div class="flow-body">
+        <h4>Frontend guarda el token</h4>
+        <p>El frontend guarda <code>accessToken</code> en <code>localStorage</code> y lo incluye en todas las peticiones futuras.</p>
+      </div>
+    </div>
+  </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <section id="flow-login">
+  <h2>Flujo: Login</h2>
+
+  <div class="flow">
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-circle c-fe">1</div><div class="flow-line"></div></div>
+      <div class="flow-body">
+        <h4>Frontend</h4>
+        <p><code>POST /auth/login</code> con <code>{ email, password }</code></p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-circle c-svc">2</div><div class="flow-line"></div></div>
+      <div class="flow-body">
+        <h4>AuthService.login()</h4>
+        <p>1. Busca el usuario por email. Si no existe → <code>401 Unauthorized</code>.</p>
+        <p>2. Compara la contraseña con <code>bcrypt.compare(plainPassword, hashedPassword)</code>. Si no coincide → <code>401</code>.</p>
+        <p>3. Genera y retorna el JWT igual que en el registro.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout info">
+    <span class="callout-icon">🔒</span>
+    <p>El mensaje de error es siempre <strong>"Invalid credentials"</strong> tanto si el email no existe como si la contraseña es incorrecta. Esto es intencional para no revelar qué campo es incorrecto.</p>
+  </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <section id="flow-create-task">
+  <h2>Flujo: Crear una Tarea</h2>
+  <p>Este es el flujo más completo porque involucra validaciones de acceso, lógica de auto-asignación y la inserción en BD.</p>
+
+  <div class="flow">
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-circle c-fe">1</div><div class="flow-line"></div></div>
+      <div class="flow-body">
+        <h4>Frontend — api.post('/tasks', body)</h4>
+        <p>Envía <code>POST /tasks</code> con header <code>Authorization: Bearer TOKEN</code> y body:</p>
+        <pre><code>{ title, description, priority, dueDate, status, projectId, assignedToId }</code></pre>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-circle c-mw">2</div><div class="flow-line"></div></div>
+      <div class="flow-body">
+        <h4>JwtAuthGuard → JwtStrategy.validate()</h4>
+        <p>Verifica el token, obtiene el usuario de la BD, lo adjunta al request.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-circle c-mw">3</div><div class="flow-line"></div></div>
+      <div class="flow-body">
+        <h4>ValidationPipe → CreateTaskDto</h4>
+        <p>Valida campos, transforma <code>projectId</code> y <code>assignedToId</code> de string a número si vienen como query params.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-circle c-ctrl">4</div><div class="flow-line"></div></div>
+      <div class="flow-body">
+        <h4>TasksController.create()</h4>
+        <pre><code><span class="dc">@Post()</span>
+<span class="fn">create</span>(<span class="dc">@GetUser()</span> user: AuthenticatedUser, <span class="dc">@Body()</span> dto: CreateTaskDto) {
+  <span class="kw">return</span> this.tasksService.<span class="fn">create</span>(user.id, dto);
+}</code></pre>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-circle c-svc">5</div><div class="flow-line"></div></div>
+      <div class="flow-body">
+        <h4>TasksService.create() — Lógica de negocio</h4>
+        <pre><code><span class="kw">async</span> <span class="fn">create</span>(userId, dto) {
+  <span class="kw">let</span> assignedToId = dto.assignedToId ?? <span class="kw">null</span>;
+
+  <span class="kw">if</span> (dto.projectId) {
+    <span class="cm">// Paso 5a: ¿tiene acceso al proyecto? (dueño o miembro aceptado)</span>
+    <span class="kw">await</span> this.<span class="fn">ensureProjectAccessibleByUser</span>(userId, dto.projectId);
+
+    <span class="kw">if</span> (dto.assignedToId) {
+      <span class="cm">// Paso 5b: solo el dueño puede asignar a otros</span>
+      <span class="kw">await</span> this.<span class="fn">ensureUserIsProjectOwner</span>(userId, dto.projectId);
+      <span class="cm">// Paso 5c: el usuario asignado debe ser miembro</span>
+      <span class="kw">await</span> this.<span class="fn">ensureUserIsMemberOfProject</span>(dto.assignedToId, dto.projectId);
+    } <span class="kw">else</span> {
+      <span class="cm">// Paso 5d: si es miembro (no dueño), auto-asignarse</span>
+      <span class="kw">const</span> isOwner = <span class="kw">await</span> prisma.project.<span class="fn">findFirst</span>({ where: { id, userId } });
+      <span class="kw">if</span> (!isOwner) assignedToId = userId; <span class="cm">// auto-asignación</span>
+    }
+  }
+
+  <span class="cm">// Paso 5e: normalizar status/completed</span>
+  <span class="kw">const</span> completionData = this.<span class="fn">buildCompletionData</span>({ status: dto.status });
+
+  <span class="cm">// Paso 5f: insertar en BD</span>
+  <span class="kw">return</span> prisma.task.<span class="fn">create</span>({ data: { ...campos, userId, assignedToId } });
+}</code></pre>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-circle c-db">6</div><div class="flow-line"></div></div>
+      <div class="flow-body">
+        <h4>PostgreSQL — INSERT INTO "Task"</h4>
+        <p>Prisma ejecuta el INSERT y retorna la tarea creada incluyendo sus relaciones (<code>getTaskInclude()</code>): proyecto, usuario asignado, subtareas y etiquetas.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-circle c-fe">7</div></div>
+      <div class="flow-body">
+        <h4>Response → Frontend</h4>
+        <p>El controller retorna el objeto tarea completo. HTTP <code>201 Created</code>.</p>
+      </div>
+    </div>
+  </div>
+
+  <h3>Función ensureProjectAccessibleByUser</h3>
+  <p>Se llama en varias partes del servicio. Busca el proyecto asegurando que el usuario sea <strong>dueño</strong> O <strong>miembro aceptado</strong>:</p>
+  <pre><code><span class="kw">private async</span> <span class="fn">ensureProjectAccessibleByUser</span>(userId, projectId) {
+  <span class="kw">const</span> project = <span class="kw">await</span> prisma.project.<span class="fn">findFirst</span>({
+    where: {
+      id: projectId,
+      OR: [
+        { userId },                                            <span class="cm">// es el dueño</span>
+        { members: { some: { userId, status: <span class="st">'accepted'</span> } } }, <span class="cm">// es miembro</span>
+      ]
+    }
+  });
+  <span class="kw">if</span> (!project) <span class="kw">throw new</span> <span class="cl">NotFoundException</span>(<span class="st">'Project not found'</span>);
+}</code></pre>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <section id="flow-complete">
+  <h2>Flujo: Completar / Descompletar una Tarea</h2>
+
+  <p>El frontend llama a <code>PATCH /tasks/:id/complete</code> o <code>PATCH /tasks/:id/uncomplete</code>.</p>
+
+  <pre><code><span class="cm">// TasksService.complete()</span>
+<span class="kw">async</span> <span class="fn">complete</span>(userId, id) {
+  <span class="kw">await</span> this.<span class="fn">ensureTaskBelongsToUser</span>(userId, id); <span class="cm">// verifica acceso</span>
+  <span class="kw">return</span> prisma.task.<span class="fn">update</span>({
+    where: { id },
+    data: {
+      completed: <span class="kw">true</span>,
+      status: TaskStatus.COMPLETED,
+      completedAt: <span class="kw">new</span> Date()   <span class="cm">// registra cuándo se completó</span>
+    }
+  });
+}</code></pre>
+
+  <h3>ensureTaskBelongsToUser</h3>
+  <p>Verifica que el usuario sea el <strong>creador</strong> O el <strong>asignado</strong> de la tarea:</p>
+  <pre><code>where: { id, OR: [{ userId }, { assignedToId: userId }] }</code></pre>
+
+  <h3>buildCompletionData — Sincronización status/completed</h3>
+  <p>La tarea tiene dos campos redundantes (<code>status</code> y <code>completed</code>). Este método privado los mantiene sincronizados:</p>
+  <table>
+    <tr><th>Entrada</th><th>status resultado</th><th>completed resultado</th></tr>
+    <tr><td><code>completed: true</code></td><td>COMPLETED</td><td>true</td></tr>
+    <tr><td><code>completed: false</code></td><td>PENDING</td><td>false</td></tr>
+    <tr><td><code>status: COMPLETED</code></td><td>COMPLETED</td><td>true</td></tr>
+    <tr><td><code>status: PENDING</code></td><td>PENDING</td><td>false</td></tr>
+    <tr><td><code>status: IN_PROGRESS</code></td><td>IN_PROGRESS</td><td>false</td></tr>
+  </table>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <section id="flow-invite">
+  <h2>Flujo: Invitar a un Usuario al Proyecto</h2>
+
+  <div class="flow">
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-circle c-fe">1</div><div class="flow-line"></div></div>
+      <div class="flow-body">
+        <h4>Frontend</h4>
+        <p><code>POST /projects/:id/members</code> con body <code>{ email: "usuario@ejemplo.com" }</code></p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-circle c-svc">2</div><div class="flow-line"></div></div>
+      <div class="flow-body">
+        <h4>ProjectsService.inviteMember(ownerId, projectId, dto)</h4>
+        <p><strong>Paso 1:</strong> Busca el proyecto con <code>WHERE id = projectId AND userId = ownerId</code>. Si no existe (o no es el dueño) → <code>404 NotFoundException</code>.</p>
+        <p><strong>Paso 2:</strong> Busca el usuario por email. Si no existe → <code>404</code>.</p>
+        <p><strong>Paso 3:</strong> Verifica que no se esté invitando a sí mismo → <code>400</code>.</p>
+        <p><strong>Paso 4:</strong> Crea un <code>ProjectMember</code> con <code>status: 'pending'</code>. Si ya existe (unique constraint) → <code>409 ConflictException</code>.</p>
+        <p><strong>Paso 5:</strong> Crea una <code>Notification</code> para el usuario invitado:</p>
+        <pre><code>{ userId: invitedUser.id, type: <span class="st">'project_invitation'</span>,
+  title: <span class="st">'Nueva invitación a proyecto'</span>,
+  body: <span class="st">`${ownerName} te invitó a "${projectName}"`</span>,
+  data: { projectId, projectName, memberId } }</code></pre>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-circle c-fe">3</div></div>
+      <div class="flow-body">
+        <h4>El invitado ve la notificación</h4>
+        <p>En el Navbar, <code>GET /notifications/invitations</code> retorna las membresías con <code>status: 'pending'</code>. Aparece un badge rojo en el ícono de usuario.</p>
+      </div>
+    </div>
+  </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <section id="flow-accept">
+  <h2>Flujo: Aceptar una Invitación</h2>
+
+  <div class="flow">
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-circle c-fe">1</div><div class="flow-line"></div></div>
+      <div class="flow-body">
+        <h4>Frontend</h4>
+        <p><code>PATCH /notifications/invitations/:memberId/accept</code></p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-circle c-svc">2</div><div class="flow-line"></div></div>
+      <div class="flow-body">
+        <h4>NotificationsService.acceptInvitation(userId, memberId)</h4>
+        <p>1. Busca <code>ProjectMember WHERE id = memberId AND userId = userId AND status = 'pending'</code>. Si no → <code>404</code>.</p>
+        <p>2. Actualiza <code>status = 'accepted'</code>.</p>
+        <p>3. Marca la notificación relacionada como leída (<code>read: true</code>), buscándola por <code>data.memberId = memberId</code>.</p>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-left"><div class="flow-circle c-fe">3</div></div>
+      <div class="flow-body">
+        <h4>Frontend recarga proyectos</h4>
+        <p>Al aceptar, el frontend llama a <code>loadData()</code> que consulta <code>GET /projects</code>. El nuevo proyecto aparece en el sidebar porque la query incluye proyectos donde <code>members.some({ userId, status: 'accepted' })</code>.</p>
+      </div>
+    </div>
+  </div>
+
+  <h3>Rechazar invitación</h3>
+  <p><code>DELETE /notifications/invitations/:memberId/decline</code> → <code>NotificationsService.declineInvitation()</code> elimina el registro <code>ProjectMember</code> directamente (no cambia status, lo borra).</p>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <section id="flow-visibility">
+  <h2>Flujo: Visibilidad de Tareas (Filtro Complejo)</h2>
+  <p>Esta es la parte más compleja del sistema. <code>buildTaskFilters()</code> construye una condición <code>OR</code> con tres casos para determinar qué tareas ve un usuario:</p>
+
+  <pre><code><span class="kw">private</span> <span class="fn">buildTaskFilters</span>(userId, query) {
+  <span class="kw">const</span> where = {
+    OR: [
+      <span class="cm">// Caso 1: el usuario creó la tarea</span>
+      { userId },
+
+      <span class="cm">// Caso 2: la tarea está asignada al usuario</span>
+      { assignedToId: userId },
+
+      <span class="cm">// Caso 3: la tarea pertenece a un proyecto</span>
+      <span class="cm">// donde el usuario es dueño O miembro aceptado</span>
+      {
+        projectId: { not: <span class="kw">null</span> },
+        project: {
+          OR: [
+            { userId },                                              <span class="cm">// es dueño</span>
+            { members: { some: { userId, status: <span class="st">'accepted'</span> } } }, <span class="cm">// es miembro</span>
+          ]
+        }
+      }
+    ]
+  };
+  <span class="cm">// ...filtros adicionales de búsqueda, proyecto, prioridad, etc.</span>
+  <span class="kw">return</span> where;
+}</code></pre>
+
+  <table>
+    <tr><th>Escenario</th><th>Condición que aplica</th></tr>
+    <tr><td>Tarea personal propia</td><td>Caso 1: <code>userId</code></td></tr>
+    <tr><td>Tarea de proyecto, asignada a mí</td><td>Caso 2: <code>assignedToId</code></td></tr>
+    <tr><td>Tarea de mi proyecto (soy dueño)</td><td>Caso 3: <code>project.userId</code></td></tr>
+    <tr><td>Tarea de proyecto ajeno donde soy miembro</td><td>Caso 3: <code>members.some(...)</code></td></tr>
+  </table>
+
+  <div class="callout warn">
+    <span class="callout-icon">⚠️</span>
+    <p>Prisma traduce este <code>OR</code> a un <strong>SQL con JOINs</strong> en una sola consulta. No son múltiples queries — es una sola consulta optimizada con índices.</p>
+  </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <section id="endpoints">
+  <h2>Referencia de Endpoints</h2>
+
+  <h3>Auth — sin token requerido</h3>
+  <table>
+    <tr><th>Método</th><th>Ruta</th><th>Descripción</th></tr>
+    <tr><td><span class="method POST">POST</span></td><td><code>/auth/register</code></td><td>Registro. Body: <code>{ name, email, password }</code></td></tr>
+    <tr><td><span class="method POST">POST</span></td><td><code>/auth/login</code></td><td>Login. Body: <code>{ email, password }</code></td></tr>
+    <tr><td><span class="method GET">GET</span></td><td><code>/auth/me</code></td><td>Retorna el usuario autenticado actual</td></tr>
+  </table>
+
+  <h3>Tasks — requieren JWT</h3>
+  <table>
+    <tr><th>Método</th><th>Ruta</th><th>Descripción</th></tr>
+    <tr><td><span class="method GET">GET</span></td><td><code>/tasks</code></td><td>Todas las tareas visibles al usuario. Query: <code>?search=&projectId=&priority=&status=</code></td></tr>
+    <tr><td><span class="method POST">POST</span></td><td><code>/tasks</code></td><td>Crear tarea. Body: <code>CreateTaskDto</code></td></tr>
+    <tr><td><span class="method GET">GET</span></td><td><code>/tasks/:id</code></td><td>Una tarea por ID</td></tr>
+    <tr><td><span class="method PATCH">PATCH</span></td><td><code>/tasks/:id</code></td><td>Editar tarea. Body: <code>UpdateTaskDto</code></td></tr>
+    <tr><td><span class="method DELETE">DELETE</span></td><td><code>/tasks/:id</code></td><td>Eliminar (solo el creador)</td></tr>
+    <tr><td><span class="method PATCH">PATCH</span></td><td><code>/tasks/:id/complete</code></td><td>Marcar como completada</td></tr>
+    <tr><td><span class="method PATCH">PATCH</span></td><td><code>/tasks/:id/uncomplete</code></td><td>Marcar como pendiente</td></tr>
+    <tr><td><span class="method GET">GET</span></td><td><code>/tasks/views/inbox</code></td><td>Tareas sin proyecto, incompletas</td></tr>
+    <tr><td><span class="method GET">GET</span></td><td><code>/tasks/views/today</code></td><td>Tareas con vencimiento hoy</td></tr>
+    <tr><td><span class="method GET">GET</span></td><td><code>/tasks/views/upcoming</code></td><td>Tareas con vencimiento futuro</td></tr>
+    <tr><td><span class="method GET">GET</span></td><td><code>/tasks/views/overdue</code></td><td>Tareas vencidas e incompletas</td></tr>
+  </table>
+
+  <h3>Projects — requieren JWT</h3>
+  <table>
+    <tr><th>Método</th><th>Ruta</th><th>Descripción</th></tr>
+    <tr><td><span class="method GET">GET</span></td><td><code>/projects</code></td><td>Proyectos propios + proyectos donde soy miembro aceptado</td></tr>
+    <tr><td><span class="method POST">POST</span></td><td><code>/projects</code></td><td>Crear proyecto</td></tr>
+    <tr><td><span class="method GET">GET</span></td><td><code>/projects/:id</code></td><td>Un proyecto (con sus tareas y miembros)</td></tr>
+    <tr><td><span class="method PATCH">PATCH</span></td><td><code>/projects/:id</code></td><td>Renombrar (solo el dueño)</td></tr>
+    <tr><td><span class="method DELETE">DELETE</span></td><td><code>/projects/:id</code></td><td>Eliminar (solo el dueño, borra tareas en cascada)</td></tr>
+    <tr><td><span class="method GET">GET</span></td><td><code>/projects/:id/members</code></td><td>Miembros aceptados del proyecto</td></tr>
+    <tr><td><span class="method POST">POST</span></td><td><code>/projects/:id/members</code></td><td>Invitar por email (solo el dueño). Body: <code>{ email }</code></td></tr>
+    <tr><td><span class="method DELETE">DELETE</span></td><td><code>/projects/:id/members/:memberId</code></td><td>Eliminar miembro (solo el dueño)</td></tr>
+  </table>
+
+  <h3>Notifications — requieren JWT</h3>
+  <table>
+    <tr><th>Método</th><th>Ruta</th><th>Descripción</th></tr>
+    <tr><td><span class="method GET">GET</span></td><td><code>/notifications</code></td><td>Todas las notificaciones del usuario</td></tr>
+    <tr><td><span class="method PATCH">PATCH</span></td><td><code>/notifications/read-all</code></td><td>Marcar todas como leídas</td></tr>
+    <tr><td><span class="method PATCH">PATCH</span></td><td><code>/notifications/:id/read</code></td><td>Marcar una como leída</td></tr>
+    <tr><td><span class="method GET">GET</span></td><td><code>/notifications/invitations</code></td><td>Invitaciones pendientes (<code>ProjectMember status=pending</code>)</td></tr>
+    <tr><td><span class="method PATCH">PATCH</span></td><td><code>/notifications/invitations/:id/accept</code></td><td>Aceptar invitación → status='accepted'</td></tr>
+    <tr><td><span class="method DELETE">DELETE</span></td><td><code>/notifications/invitations/:id/decline</code></td><td>Rechazar invitación → elimina ProjectMember</td></tr>
+  </table>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <section id="errores">
+  <h2>Manejo de Errores</h2>
+  <p>NestJS mapea automáticamente las excepciones a códigos HTTP:</p>
+  <table>
+    <tr><th>Excepción</th><th>HTTP</th><th>Cuándo se usa</th></tr>
+    <tr><td><code>NotFoundException</code></td><td>404</td><td>Recurso no encontrado o sin acceso (no se revela si existe)</td></tr>
+    <tr><td><code>UnauthorizedException</code></td><td>401</td><td>Token inválido, expirado o usuario no existe</td></tr>
+    <tr><td><code>ForbiddenException</code></td><td>403</td><td>Autenticado pero sin permiso (ej: asignar tarea sin ser dueño)</td></tr>
+    <tr><td><code>ConflictException</code></td><td>409</td><td>Email ya registrado, invitación duplicada, nombre de proyecto duplicado</td></tr>
+    <tr><td><code>BadRequestException</code></td><td>400</td><td>Validación fallida o lógica inválida (invitarse a sí mismo)</td></tr>
+  </table>
+
+  <h3>Errores de Prisma</h3>
+  <p>Cuando ocurre una violación de restricción única en la BD, Prisma lanza un <code>PrismaClientKnownRequestError</code> con código <code>P2002</code>. El servicio lo captura y lo convierte en <code>ConflictException</code>:</p>
+  <pre><code><span class="kw">if</span> (error <span class="kw">instanceof</span> Prisma.PrismaClientKnownRequestError
+    && error.code === <span class="st">'P2002'</span>) {
+  <span class="kw">throw new</span> <span class="cl">ConflictException</span>(<span class="st">'...'</span>);
+}</code></pre>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <section id="cors">
+  <h2>Configuración del Servidor (main.ts)</h2>
+
+  <h3>CORS</h3>
+  <pre><code>app.<span class="fn">enableCors</span>({
+  origin: <span class="nm">/^http:\/\/localhost(:\d+)?$/</span>, <span class="cm">// cualquier puerto local</span>
+  methods: <span class="st">'GET,HEAD,PUT,PATCH,POST,DELETE'</span>,
+  credentials: <span class="kw">true</span>,
+});</code></pre>
+  <p>La expresión regular acepta <code>http://localhost</code>, <code>http://localhost:3000</code>, <code>http://localhost:5173</code>, etc. Sin esta configuración, el navegador bloquea las peticiones del frontend por política de mismo origen (Same-Origin Policy).</p>
+
+  <h3>ValidationPipe global</h3>
+  <pre><code>app.<span class="fn">useGlobalPipes</span>(<span class="kw">new</span> <span class="cl">ValidationPipe</span>({
+  whitelist: <span class="kw">true</span>,          <span class="cm">// elimina campos extra</span>
+  transform: <span class="kw">true</span>,          <span class="cm">// convierte tipos automáticamente</span>
+  forbidNonWhitelisted: <span class="kw">true</span>, <span class="cm">// error si hay campos desconocidos</span>
+}));</code></pre>
+
+  <h3>Swagger</h3>
+  <pre><code><span class="kw">const</span> config = <span class="kw">new</span> <span class="cl">DocumentBuilder</span>()
+  .<span class="fn">setTitle</span>(<span class="st">'Documentación de la API'</span>)
+  .<span class="fn">addBearerAuth</span>()  <span class="cm">// permite probar endpoints con JWT desde la UI</span>
+  .<span class="fn">build</span>();
+SwaggerModule.<span class="fn">setup</span>(<span class="st">'api/docs'</span>, app, document);</code></pre>
+  <p>La documentación interactiva está disponible en <code>http://localhost:3000/api/docs</code>.</p>
+
+  <h3>PrismaService — Conexión a la BD</h3>
+  <pre><code><span class="kw">constructor</span>() {
+  <span class="kw">super</span>({
+    adapter: <span class="kw">new</span> <span class="cl">PrismaPg</span>({ connectionString: process.env.DATABASE_URL })
+  });
+}
+<span class="kw">async</span> <span class="fn">onModuleInit</span>() { <span class="kw">await</span> this.<span class="fn">$connect</span>(); }    <span class="cm">// al arrancar</span>
+<span class="kw">async</span> <span class="fn">onModuleDestroy</span>() { <span class="kw">await</span> this.<span class="fn">$disconnect</span>(); } <span class="cm">// al cerrar</span></code></pre>
+  <p>El <code>DATABASE_URL</code> viene de la variable de entorno en <code>.env</code>. En producción apunta a Supabase (PostgreSQL en la nube).</p>
+
+  <div class="callout tip">
+    <span class="callout-icon">🚀</span>
+    <p>El servidor arranca con <code>npm run start:dev</code> que usa <strong>modo watch</strong>: detecta cambios en los archivos <code>.ts</code> y reinicia automáticamente sin necesidad de detenerlo manualmente.</p>
+  </div>
+  </section>
+
+  <br /><br />
+  <p style="text-align:center; color: var(--muted); font-size: 13px; border-top: 1px solid var(--border); padding-top: 24px;">
+    Task Management Backend · NestJS + Prisma + PostgreSQL
+  </p>
+
+</main>
+</div>
+</body>
+</html>

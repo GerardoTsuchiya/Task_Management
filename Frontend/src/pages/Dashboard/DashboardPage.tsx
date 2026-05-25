@@ -61,6 +61,13 @@ export default function DashboardPage({ user, onLogout }: DashboardPageProps) {
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
   const [invitingProject, setInvitingProject] = useState<Project | null>(null);
   const [filterAssignedToMe, setFilterAssignedToMe] = useState(false);
+  const [sortByPriority, setSortByPriority] = useState(false);
+
+  const PRIORITY_ORDER: Record<string, number> = { URGENT: 4, HIGH: 3, MEDIUM: 2, LOW: 1 };
+  function sortTasks(arr: Task[]) {
+    if (!sortByPriority) return arr;
+    return [...arr].sort((a, b) => (PRIORITY_ORDER[b.priority] ?? 0) - (PRIORITY_ORDER[a.priority] ?? 0));
+  }
 
   async function loadData() {
     try {
@@ -108,22 +115,46 @@ export default function DashboardPage({ user, onLogout }: DashboardPageProps) {
   async function handleDeleteProject(id: number) {
     const previousProjects = [...projects];
     const previousTasks = [...tasks];
+    const previousActive = activeProject;
 
     setProjects(prev => prev.filter(p => p.id !== id));
     setTasks(prev => prev.filter(t => t.projectId !== id));
-
-    if (activeProject?.id === id) {
-      setActiveProject(null);
-    }
+    if (activeProject?.id === id) setActiveProject(null);
 
     try {
       await api.delete(`/projects/${id}`);
       await loadData();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
       setProjects(previousProjects);
       setTasks(previousTasks);
-      alert("Error al eliminar el proyecto.");
+      setActiveProject(previousActive);
+      if (err.status === 403) {
+        alert("No puedes eliminar este proyecto porque no eres el dueño.");
+      } else {
+        alert("Error al eliminar el proyecto.");
+      }
+    }
+  }
+
+  async function handleLeaveProject(id: number) {
+    const previousProjects = [...projects];
+    const previousTasks = [...tasks];
+    const previousActive = activeProject;
+
+    setProjects(prev => prev.filter(p => p.id !== id));
+    setTasks(prev => prev.filter(t => t.projectId !== id));
+    if (activeProject?.id === id) setActiveProject(null);
+
+    try {
+      await api.delete(`/projects/${id}/members/me`);
+      await loadData();
+    } catch (err: any) {
+      console.error(err);
+      setProjects(previousProjects);
+      setTasks(previousTasks);
+      setActiveProject(previousActive);
+      alert("No se pudo salir del proyecto.");
     }
   }
 
@@ -158,7 +189,7 @@ export default function DashboardPage({ user, onLogout }: DashboardPageProps) {
     }
   }
 
-  async function handleUpdateTask(id: number, updatedFields: { title: string; desc: string; priority: string; dueDate: string }) {
+  async function handleUpdateTask(id: number, updatedFields: { title: string; desc: string; priority: string; dueDate: string; assignedToId?: number | null }) {
     const previousTasks = [...tasks];
 
     setTasks((prevTasks) =>
@@ -175,6 +206,7 @@ export default function DashboardPage({ user, onLogout }: DashboardPageProps) {
         description: updatedFields.desc || null,
         priority: updatedFields.priority,
         dueDate: updatedFields.dueDate || null,
+        ...(updatedFields.assignedToId !== undefined && { assignedToId: updatedFields.assignedToId }),
       });
       await loadData();
     } catch (err) {
@@ -227,21 +259,34 @@ export default function DashboardPage({ user, onLogout }: DashboardPageProps) {
 
   const todayStr = new Date().toISOString().split("T")[0]; 
 
-  const pendingTasks: Task[] = [];
-  const overdueTasks: Task[] = [];
-  const completedTasks: Task[] = [];
+  function canEditDeleteTask(task: Task): boolean {
+    if (task.userId === user?.id) return true;
+    if (task.projectId) {
+      const proj = projects.find(p => p.id === task.projectId);
+      return proj?.userId === user?.id;
+    }
+    return false;
+  }
+
+  const pendingTasksRaw: Task[] = [];
+  const overdueTasksRaw: Task[] = [];
+  const completedTasksRaw: Task[] = [];
 
   filteredTasks.forEach((task) => {
     const taskCleanDate = task.dueDate ? task.dueDate.split("T")[0] : null;
 
     if (task.status === "COMPLETED") {
-      completedTasks.push(task);
+      completedTasksRaw.push(task);
     } else if (taskCleanDate && taskCleanDate < todayStr) {
-      overdueTasks.push(task);
+      overdueTasksRaw.push(task);
     } else {
-      pendingTasks.push(task);
+      pendingTasksRaw.push(task);
     }
   });
+
+  const pendingTasks = sortTasks(pendingTasksRaw);
+  const overdueTasks = sortTasks(overdueTasksRaw);
+  const completedTasks = sortTasks(completedTasksRaw);
 
   return (
     <div style={{ minHeight: "100vh", background: COLORS.bg, display: "flex", flexDirection: "column" }}>
@@ -249,15 +294,17 @@ export default function DashboardPage({ user, onLogout }: DashboardPageProps) {
 
       <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
         
-        <ProjectSidebar 
+        <ProjectSidebar
           projects={projects}
           activeProject={activeProject}
-          tasks={tasks} 
+          tasks={tasks}
+          currentUserId={user?.id}
           onSelectProject={setActiveProject}
           onCreateProjectClick={() => setShowProjectModal(true)}
           onEditProjectClick={setEditingProject}
           onDeleteProjectClick={setProjectToDelete}
           onInviteMemberClick={setInvitingProject}
+          onLeaveProjectClick={(proj) => handleLeaveProject(proj.id)}
         />
         
         <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "auto", background: COLORS.bg }}>
@@ -266,6 +313,24 @@ export default function DashboardPage({ user, onLogout }: DashboardPageProps) {
               {activeProject ? activeProject.name : "Todas las tareas"}
             </span>
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <button
+                onClick={() => setSortByPriority((v) => !v)}
+                title="Ordenar por prioridad"
+                style={{
+                  background: sortByPriority ? COLORS.textMuted : "transparent",
+                  border: `1.5px solid ${COLORS.textMuted}`,
+                  borderRadius: 20,
+                  padding: "4px 14px",
+                  color: sortByPriority ? COLORS.bg : COLORS.textMuted,
+                  fontFamily: "'Sansation', sans-serif",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                Por prioridad
+              </button>
               <button
                 onClick={() => setFilterAssignedToMe((v) => !v)}
                 title="Filtrar por asignadas a mí"
@@ -293,7 +358,7 @@ export default function DashboardPage({ user, onLogout }: DashboardPageProps) {
               <div>
                 <SectionHeader>Pendientes</SectionHeader>
                 {pendingTasks.map((t) => (
-                  <TaskRow key={t.id} task={t} onToggleStatus={toggleTaskStatus} onViewClick={setViewingTask} onEditClick={setEditingTask} onDeleteClick={setTaskToDelete} />
+                  <TaskRow key={t.id} task={t} onToggleStatus={toggleTaskStatus} onViewClick={setViewingTask} onEditClick={setEditingTask} onDeleteClick={setTaskToDelete} canEditDelete={canEditDeleteTask(t)} />
                 ))}
               </div>
             )}
@@ -302,7 +367,7 @@ export default function DashboardPage({ user, onLogout }: DashboardPageProps) {
               <div>
                 <SectionHeader>Atrasadas</SectionHeader>
                 {overdueTasks.map((t) => (
-                  <TaskRow key={t.id} task={t} onToggleStatus={toggleTaskStatus} onViewClick={setViewingTask} onEditClick={setEditingTask} onDeleteClick={setTaskToDelete} isOverdue={true} />
+                  <TaskRow key={t.id} task={t} onToggleStatus={toggleTaskStatus} onViewClick={setViewingTask} onEditClick={setEditingTask} onDeleteClick={setTaskToDelete} isOverdue={true} canEditDelete={canEditDeleteTask(t)} />
                 ))}
               </div>
             )}
@@ -311,7 +376,7 @@ export default function DashboardPage({ user, onLogout }: DashboardPageProps) {
               <div>
                 <SectionHeader>Completadas</SectionHeader>
                 {completedTasks.map((t) => (
-                  <TaskRow key={t.id} task={t} onToggleStatus={toggleTaskStatus} onViewClick={setViewingTask} onEditClick={setEditingTask} onDeleteClick={setTaskToDelete} />
+                  <TaskRow key={t.id} task={t} onToggleStatus={toggleTaskStatus} onViewClick={setViewingTask} onEditClick={setEditingTask} onDeleteClick={setTaskToDelete} canEditDelete={canEditDeleteTask(t)} />
                 ))}
               </div>
             )}
@@ -332,7 +397,26 @@ export default function DashboardPage({ user, onLogout }: DashboardPageProps) {
       </div>
 
       {viewingTask && <ViewTaskModal task={viewingTask} onClose={() => setViewingTask(null)} />}
-      {editingTask && <EditTaskModal task={editingTask} onClose={() => setEditingTask(null)} onSave={handleUpdateTask} />}
+      {editingTask && (
+        <EditTaskModal
+          task={editingTask}
+          isOwner={!!editingTask.projectId && projects.find(p => p.id === editingTask.projectId)?.userId === user?.id}
+          projectMembers={
+            editingTask.projectId
+              ? (() => {
+                  const proj = projects.find(p => p.id === editingTask.projectId);
+                  if (!proj || proj.userId !== user?.id) return [];
+                  return [
+                    ...(user ? [{ id: -1, user: { id: user.id, name: `${user.name} (yo)`, email: user.email } }] : []),
+                    ...proj.members,
+                  ];
+                })()
+              : []
+          }
+          onClose={() => setEditingTask(null)}
+          onSave={handleUpdateTask}
+        />
+      )}
       {taskToDelete && <DeleteTaskModal task={taskToDelete} onClose={() => setTaskToDelete(null)} onConfirm={handleDeleteTask} />}
 
       {invitingProject && (
@@ -361,7 +445,11 @@ export default function DashboardPage({ user, onLogout }: DashboardPageProps) {
         <NewTaskModal
           projectId={activeProject ? String(activeProject.id) : "0"}
           isOwner={!!activeProject && activeProject.userId === user?.id}
-          projectMembers={activeProject?.members.filter(m => m.user.id !== user?.id) ?? []}
+          projectMembers={
+            activeProject && user && activeProject.userId === user.id
+              ? [{ id: -1, user: { id: user.id, name: `${user.name} (yo)`, email: user.email } }, ...activeProject.members]
+              : activeProject?.members ?? []
+          }
           onClose={() => setShowModal(false)}
           onSave={handleSaveTask}
         />

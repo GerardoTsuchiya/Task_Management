@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Pencil, Trash2, Layers, ChevronDown, Calendar, UserPlus } from "lucide-react";
+import { Pencil, Trash2, Layers, ChevronDown, Calendar, UserPlus, LogOut } from "lucide-react";
 import { COLORS } from "../../constants/colors.ts";
 import { api } from "../../services/api.ts";
 
@@ -161,20 +161,24 @@ interface ProjectSidebarRowProps {
   proj: Project;
   isActive: boolean;
   projectTasks: Task[];
+  isOwner: boolean;
   onClick: () => void;
   onEdit: () => void;
   onDelete: () => void;
   onInvite: () => void;
+  onLeave: () => void;
 }
 
 function ProjectSidebarRow({
   proj,
   isActive,
   projectTasks,
+  isOwner,
   onClick,
   onEdit,
   onDelete,
   onInvite,
+  onLeave,
 }: ProjectSidebarRowProps) {
   const [hovered, setHovered] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false); 
@@ -229,33 +233,52 @@ function ProjectSidebarRow({
         </div>
 
         <div style={{ display: "flex", gap: 8, alignItems: "center", opacity: hovered ? 1 : 0, transition: "opacity 0.15s ease", flexShrink: 0 }}>
-          <button
-            title="Invitar miembro"
-            onClick={(e) => { e.stopPropagation(); onInvite(); }}
-            style={{ background: "transparent", border: "none", color: COLORS.textMuted, cursor: "pointer", padding: 2, display: "flex" }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = COLORS.textMuted)}
-            onMouseLeave={(e) => (e.currentTarget.style.color = COLORS.textMuted)}
-          >
-            <UserPlus size={12} />
-          </button>
-          <button
-            title="Editar Proyecto"
-            onClick={(e) => { e.stopPropagation(); onEdit(); }}
-            style={{ background: "transparent", border: "none", color: COLORS.textMuted, cursor: "pointer", padding: 2, display: "flex" }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = COLORS.text)}
-            onMouseLeave={(e) => (e.currentTarget.style.color = COLORS.textMuted)}
-          >
-            <Pencil size={12} />
-          </button>
-          <button
-            title="Eliminar Proyecto"
-            onClick={(e) => { e.stopPropagation(); onDelete(); }}
-            style={{ background: "transparent", border: "none", color: COLORS.textMuted, cursor: "pointer", padding: 2, display: "flex" }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = COLORS.priorityHigh)}
-            onMouseLeave={(e) => (e.currentTarget.style.color = COLORS.textMuted)}
-          >
-            <Trash2 size={12} />
-          </button>
+          {isOwner ? (
+            <button
+              title="Invitar miembro"
+              onClick={(e) => { e.stopPropagation(); onInvite(); }}
+              style={{ background: "transparent", border: "none", color: COLORS.textMuted, cursor: "pointer", padding: 2, display: "flex" }}
+            >
+              <UserPlus size={12} />
+            </button>
+          ) : (
+            <button
+              title="Salirse del proyecto"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (window.confirm(`¿Estás seguro de que te quieres salir de "${proj.name}"?`)) {
+                  onLeave();
+                }
+              }}
+              style={{ background: "transparent", border: "none", color: COLORS.textMuted, cursor: "pointer", padding: 2, display: "flex" }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = COLORS.priorityHigh)}
+              onMouseLeave={(e) => (e.currentTarget.style.color = COLORS.textMuted)}
+            >
+              <LogOut size={12} />
+            </button>
+          )}
+          {isOwner && (
+            <button
+              title="Editar Proyecto"
+              onClick={(e) => { e.stopPropagation(); onEdit(); }}
+              style={{ background: "transparent", border: "none", color: COLORS.textMuted, cursor: "pointer", padding: 2, display: "flex" }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = COLORS.text)}
+              onMouseLeave={(e) => (e.currentTarget.style.color = COLORS.textMuted)}
+            >
+              <Pencil size={12} />
+            </button>
+          )}
+          {isOwner && (
+            <button
+              title="Eliminar Proyecto"
+              onClick={(e) => { e.stopPropagation(); onDelete(); }}
+              style={{ background: "transparent", border: "none", color: COLORS.textMuted, cursor: "pointer", padding: 2, display: "flex" }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = COLORS.priorityHigh)}
+              onMouseLeave={(e) => (e.currentTarget.style.color = COLORS.textMuted)}
+            >
+              <Trash2 size={12} />
+            </button>
+          )}
         </div>
       </div>
 
@@ -289,22 +312,26 @@ interface ProjectSidebarProps {
   projects: Project[];
   activeProject: Project | null;
   tasks: Task[];
+  currentUserId?: number;
   onSelectProject: (proj: Project | null) => void;
   onCreateProjectClick: () => void;
   onEditProjectClick: (proj: Project) => void;
   onDeleteProjectClick: (proj: Project) => void;
   onInviteMemberClick: (proj: Project) => void;
+  onLeaveProjectClick: (proj: Project) => void;
 }
 
 export default function ProjectSidebar({
   projects,
   activeProject,
   tasks,
+  currentUserId,
   onSelectProject,
   onCreateProjectClick,
   onEditProjectClick,
   onDeleteProjectClick,
   onInviteMemberClick,
+  onLeaveProjectClick,
 }: ProjectSidebarProps) {
   return (
     <div
@@ -363,10 +390,12 @@ export default function ProjectSidebar({
             proj={proj}
             isActive={activeProject?.id === proj.id}
             projectTasks={projectTasks}
+            isOwner={proj.userId === currentUserId}
             onClick={() => onSelectProject(proj)}
             onEdit={() => onEditProjectClick(proj)}
             onDelete={() => onDeleteProjectClick(proj)}
             onInvite={() => onInviteMemberClick(proj)}
+            onLeave={() => onLeaveProjectClick(proj)}
           />
         );
       })}

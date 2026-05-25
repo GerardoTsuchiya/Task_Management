@@ -77,6 +77,14 @@ export class ProjectsController {
     return this.projectsService.inviteMember(user.id, id, dto);
   }
 
+  @Delete(':id/members/me')
+  leaveProject(
+    @GetUser() user: AuthenticatedUser,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.projectsService.leaveProject(user.id, id);
+  }
+
   @Delete(':id/members/:memberId')
   removeMember(
     @GetUser() user: AuthenticatedUser,

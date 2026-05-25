@@ -1,0 +1,1493 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Frontend Docs — Task Management</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #1a1a1a;
+      color: #e0e0e0;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    /* ── SIDEBAR ── */
+    #sidebar {
+      position: fixed;
+      top: 0; left: 0;
+      width: 260px;
+      height: 100vh;
+      background: #111;
+      border-right: 1px solid #2a2a2a;
+      overflow-y: auto;
+      padding: 24px 0 40px;
+      z-index: 100;
+    }
+    #sidebar .logo {
+      padding: 0 20px 24px;
+      font-size: 17px;
+      font-weight: 700;
+      color: #C3E8BD;
+      border-bottom: 1px solid #222;
+      margin-bottom: 12px;
+    }
+    #sidebar .logo span { color: #8EB897; font-size: 12px; display: block; font-weight: 400; margin-top: 2px; }
+    #sidebar a {
+      display: block;
+      padding: 7px 20px;
+      color: #888;
+      text-decoration: none;
+      font-size: 13px;
+      border-left: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    #sidebar a:hover { color: #C3E8BD; background: #1a1a1a; }
+    #sidebar a.active { color: #C3E8BD; border-left-color: #C3E8BD; background: #1a2a1a; }
+    #sidebar .section-label {
+      padding: 16px 20px 6px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: #444;
+      text-transform: uppercase;
+    }
+
+    /* ── MAIN ── */
+    #main {
+      margin-left: 260px;
+      padding: 40px 48px 80px;
+      max-width: 1100px;
+    }
+
+    /* ── SECTIONS ── */
+    section { margin-bottom: 64px; }
+    h1 { font-size: 30px; color: #C3E8BD; margin-bottom: 8px; }
+    h2 { font-size: 22px; color: #C3E8BD; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 1px solid #2a2a2a; }
+    h3 { font-size: 16px; color: #8EB897; margin: 28px 0 10px; }
+    h4 { font-size: 14px; color: #aaa; margin: 18px 0 8px; font-weight: 600; }
+    p { margin-bottom: 12px; color: #ccc; }
+    ul, ol { margin: 0 0 12px 20px; color: #ccc; }
+    li { margin-bottom: 4px; }
+
+    .subtitle {
+      color: #777;
+      font-size: 14px;
+      margin-bottom: 32px;
+    }
+
+    /* ── TAGS ── */
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      margin-right: 4px;
+    }
+    .tag-green  { background: #1a3a1a; color: #C3E8BD; border: 1px solid #2a5a2a; }
+    .tag-blue   { background: #1a2a3a; color: #7ec8e3; border: 1px solid #2a4a6a; }
+    .tag-yellow { background: #3a2a00; color: #D7B945; border: 1px solid #6a4a00; }
+    .tag-red    { background: #3a1a1a; color: #e88; border: 1px solid #6a2a2a; }
+    .tag-purple { background: #2a1a3a; color: #c8a; border: 1px solid #4a2a6a; }
+    .tag-gray   { background: #252525; color: #aaa; border: 1px solid #333; }
+
+    /* ── CODE ── */
+    pre {
+      background: #111;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      padding: 16px 20px;
+      overflow-x: auto;
+      font-size: 13px;
+      line-height: 1.55;
+      margin: 12px 0 20px;
+    }
+    code {
+      font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+      color: #e0e0e0;
+    }
+    pre code { color: #e0e0e0; }
+    .kw  { color: #569cd6; }
+    .fn  { color: #dcdcaa; }
+    .str { color: #ce9178; }
+    .cmt { color: #6a9955; font-style: italic; }
+    .typ { color: #4ec9b0; }
+    .num { color: #b5cea8; }
+    .prop{ color: #9cdcfe; }
+    .dec { color: #c586c0; }
+
+    /* ── CARDS ── */
+    .card {
+      background: #242424;
+      border: 1px solid #2a2a2a;
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin: 12px 0 20px;
+    }
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #C3E8BD;
+      margin-bottom: 10px;
+    }
+
+    /* ── GRID ── */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 12px 0 20px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin: 12px 0 20px; }
+    @media (max-width: 800px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+    /* ── TABLES ── */
+    table { width: 100%; border-collapse: collapse; margin: 12px 0 20px; font-size: 13px; }
+    th { background: #1e1e1e; color: #8EB897; text-align: left; padding: 9px 12px; font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase; border-bottom: 1px solid #333; }
+    td { padding: 9px 12px; border-bottom: 1px solid #222; color: #ccc; vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #1e2a1e; }
+
+    /* ── FLOW STEPS ── */
+    .flow-step {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 14px;
+      align-items: flex-start;
+    }
+    .step-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #1a3a1a;
+      border: 1.5px solid #C3E8BD;
+      color: #C3E8BD;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .step-body { flex: 1; }
+    .step-title { font-weight: 700; color: #e0e0e0; margin-bottom: 4px; }
+    .step-desc { color: #aaa; font-size: 13px; }
+
+    /* ── ARROWS ── */
+    .arrow-flow {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 16px 0;
+      font-size: 13px;
+    }
+    .arrow-box {
+      background: #1e2a1e;
+      border: 1px solid #2a4a2a;
+      border-radius: 6px;
+      padding: 6px 12px;
+      color: #C3E8BD;
+      font-weight: 600;
+    }
+    .arrow-sep { color: #555; font-size: 18px; }
+
+    /* ── FILE TREE ── */
+    .tree {
+      background: #111;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      padding: 16px 20px;
+      font-size: 13px;
+      line-height: 1.9;
+    }
+    .tree code { color: #9cdcfe; }
+    .tree .dir { color: #C3E8BD; font-weight: 600; }
+    .tree .file { color: #ccc; }
+    .tree .cmt2 { color: #555; font-size: 12px; }
+
+    /* ── CALLOUT ── */
+    .callout {
+      border-left: 3px solid #C3E8BD;
+      background: #1a2a1a;
+      border-radius: 0 8px 8px 0;
+      padding: 12px 16px;
+      margin: 16px 0;
+      font-size: 13px;
+      color: #bbb;
+    }
+    .callout.warn { border-left-color: #D7B945; background: #2a2000; }
+    .callout.info { border-left-color: #7ec8e3; background: #0a1a2a; }
+
+    /* ── COLOR SWATCH ── */
+    .swatch-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0 16px; }
+    .swatch {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #1e1e1e;
+      border: 1px solid #333;
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+    .swatch-color { width: 18px; height: 18px; border-radius: 3px; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.1); }
+    .swatch-name { color: #ccc; }
+    .swatch-hex { color: #666; font-size: 11px; }
+
+    /* ── DIVIDER ── */
+    hr { border: none; border-top: 1px solid #222; margin: 40px 0; }
+  </style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="logo">
+    Infuse Task Manager
+    <span>Frontend — Documentación</span>
+  </div>
+
+  <div class="section-label">Arquitectura</div>
+  <a href="#overview">Visión General</a>
+  <a href="#stack">Stack Tecnológico</a>
+  <a href="#estructura">Estructura de Archivos</a>
+  <a href="#flujo-auth">Flujo de Autenticación</a>
+
+  <div class="section-label">Servicios & Constantes</div>
+  <a href="#api-service">Servicio API</a>
+  <a href="#colors">Sistema de Colores</a>
+
+  <div class="section-label">Componentes Globales</div>
+  <a href="#input">Input</a>
+  <a href="#outlinebtn">OutlineBtn</a>
+  <a href="#navbar">Navbar</a>
+
+  <div class="section-label">Páginas</div>
+  <a href="#login">LoginPage</a>
+  <a href="#register">RegisterPage</a>
+  <a href="#dashboard">DashboardPage</a>
+
+  <div class="section-label">Dashboard — Componentes</div>
+  <a href="#sidebar-comp">ProjectSidebar</a>
+  <a href="#taskrow">TaskRow</a>
+  <a href="#sectionheader">SectionHeader</a>
+  <a href="#charts">ProjectCharts</a>
+
+  <div class="section-label">Modales</div>
+  <a href="#newtask">NewTaskModal</a>
+  <a href="#viewtask">ViewTaskModal</a>
+  <a href="#edittask">EditTaskModal</a>
+  <a href="#deletetask">DeleteTaskModal</a>
+  <a href="#newproject">NewProjectModal</a>
+  <a href="#editproject">EditProjectModal</a>
+  <a href="#deleteproject">DeleteProjectModal</a>
+  <a href="#invitemember">InviteMemberModal</a>
+
+  <div class="section-label">Flujos Completos</div>
+  <a href="#flow-login">Login</a>
+  <a href="#flow-create-task">Crear Tarea</a>
+  <a href="#flow-toggle">Completar Tarea</a>
+  <a href="#flow-invite">Invitar Miembro</a>
+  <a href="#flow-invitation">Aceptar Invitación</a>
+  <a href="#flow-filter">Filtro "Asignadas a mí"</a>
+
+  <div class="section-label">Referencia</div>
+  <a href="#endpoints">Endpoints del Frontend</a>
+  <a href="#patterns">Patrones Clave</a>
+  <a href="#interfaces">Interfaces TypeScript</a>
+</nav>
+
+<!-- MAIN CONTENT -->
+<main id="main">
+
+  <!-- ══════════════════ OVERVIEW ══════════════════ -->
+  <section id="overview">
+    <h1>Frontend Documentation</h1>
+    <p class="subtitle">Aplicación web de gestión de tareas — React + TypeScript + Vite</p>
+
+    <p>
+      El frontend es una <strong>Single Page Application (SPA)</strong> construida con React 18 y TypeScript. No utiliza
+      un router externo; en su lugar maneja la navegación con <strong>estados de string</strong> en
+      <code>App.tsx</code>: <code>"login"</code>, <code>"register"</code>, <code>"dashboard"</code> y
+      <code>"loading"</code>.
+    </p>
+    <p>
+      Toda la lógica de negocio (llamadas a la API, actualizaciones de estado) vive en
+      <code>DashboardPage.tsx</code>, que actúa como contenedor principal y pasa datos hacia abajo mediante
+      <strong>props</strong>. Los componentes hijos son puramente presentacionales.
+    </p>
+
+    <div class="arrow-flow">
+      <div class="arrow-box">main.tsx</div>
+      <span class="arrow-sep">→</span>
+      <div class="arrow-box">App.tsx<br><small style="font-weight:400;color:#8EB897">Auth + routing</small></div>
+      <span class="arrow-sep">→</span>
+      <div class="arrow-box">DashboardPage<br><small style="font-weight:400;color:#8EB897">Estado global</small></div>
+      <span class="arrow-sep">→</span>
+      <div class="arrow-box">Componentes<br><small style="font-weight:400;color:#8EB897">Solo presentación</small></div>
+    </div>
+
+    <div class="callout">
+      <strong>Punto de entrada:</strong> <code>main.tsx</code> monta el componente <code>&lt;App /&gt;</code> en el
+      <code>&lt;div id="root"&gt;</code> del <code>index.html</code>. Todo lo demás parte de ahí.
+    </div>
+  </section>
+
+  <!-- ══════════════════ STACK ══════════════════ -->
+  <section id="stack">
+    <h2>Stack Tecnológico</h2>
+    <table>
+      <thead><tr><th>Tecnología</th><th>Versión aprox.</th><th>Para qué se usa</th></tr></thead>
+      <tbody>
+        <tr><td><span class="tag tag-blue">React 18</span></td><td>18.x</td><td>UI declarativa con hooks (<code>useState</code>, <code>useEffect</code>, <code>useRef</code>)</td></tr>
+        <tr><td><span class="tag tag-blue">TypeScript</span></td><td>5.x</td><td>Tipado estático; interfaces para props, estados y respuestas de la API</td></tr>
+        <tr><td><span class="tag tag-yellow">Vite</span></td><td>5.x</td><td>Bundler y servidor de desarrollo con HMR (Hot Module Replacement)</td></tr>
+        <tr><td><span class="tag tag-green">lucide-react</span></td><td>latest</td><td>Iconos SVG: Pencil, Trash2, Eye, UserPlus, Calendar, Layers, ChevronDown…</td></tr>
+        <tr><td><span class="tag tag-gray">localStorage</span></td><td>Web API</td><td>Almacenar el JWT token entre sesiones</td></tr>
+        <tr><td><span class="tag tag-gray">CSS-in-JS (inline)</span></td><td>—</td><td>Estilos directamente en el atributo <code>style</code> de cada elemento</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout info">
+      <strong>Sin librerías de estado global</strong>: No se usa Redux, Zustand ni Context API. El estado vive en
+      componentes individuales y se comparte mediante props. Funciona bien para una app de este tamaño.
+    </div>
+  </section>
+
+  <!-- ══════════════════ ESTRUCTURA ══════════════════ -->
+  <section id="estructura">
+    <h2>Estructura de Archivos</h2>
+    <div class="tree">
+<pre><code><span class="dir">Frontend/src/</span>
+├── <span class="file">main.tsx</span>          <span class="cmt2">← punto de entrada, monta &lt;App /&gt;</span>
+├── <span class="file">App.tsx</span>           <span class="cmt2">← lógica de sesión y routing por estado</span>
+├── <span class="file">App.css</span>           <span class="cmt2">← estilos globales mínimos</span>
+├── <span class="file">index.css</span>         <span class="cmt2">← reset + fuentes</span>
+│
+├── <span class="dir">constants/</span>
+│   └── <span class="file">colors.ts</span>     <span class="cmt2">← tokens de color del design system</span>
+│
+├── <span class="dir">services/</span>
+│   └── <span class="file">api.ts</span>        <span class="cmt2">← cliente HTTP: GET, POST, PATCH, DELETE</span>
+│
+├── <span class="dir">components/</span>       <span class="cmt2">← componentes reutilizables globales</span>
+│   ├── <span class="file">Input.tsx</span>
+│   ├── <span class="file">OutlineBtn.tsx</span>
+│   └── <span class="file">Navbar.tsx</span>
+│
+└── <span class="dir">pages/</span>
+    ├── <span class="dir">Login/</span>
+    │   └── <span class="file">LoginPage.tsx</span>
+    ├── <span class="dir">Register/</span>
+    │   └── <span class="file">RegisterPage.tsx</span>
+    └── <span class="dir">Dashboard/</span>      <span class="cmt2">← todo lo relacionado con el dashboard</span>
+        ├── <span class="file">DashboardPage.tsx</span>     <span class="cmt2">← contenedor principal (estado global)</span>
+        ├── <span class="file">ProjectSidebar.tsx</span>    <span class="cmt2">← barra lateral de proyectos</span>
+        ├── <span class="file">SectionHeader.tsx</span>     <span class="cmt2">← encabezado de sección de tareas</span>
+        ├── <span class="file">TaskRow.tsx</span>           <span class="cmt2">← fila individual de tarea</span>
+        ├── <span class="file">ProjectCharts.tsx</span>     <span class="cmt2">← gráficas SVG del proyecto</span>
+        ├── <span class="file">NewTaskModal.tsx</span>
+        ├── <span class="file">ViewTaskModal.tsx</span>
+        ├── <span class="file">EditTaskModal.tsx</span>
+        ├── <span class="file">DeleteTaskModal.tsx</span>
+        ├── <span class="file">NewProjectModal.tsx</span>
+        ├── <span class="file">EditProjectModal.tsx</span>
+        ├── <span class="file">DeleteProjectModal.tsx</span>
+        └── <span class="file">InviteMemberModal.tsx</span></code></pre>
+    </div>
+  </section>
+
+  <!-- ══════════════════ FLUJO AUTH ══════════════════ -->
+  <section id="flujo-auth">
+    <h2>Flujo de Autenticación</h2>
+    <p>
+      <code>App.tsx</code> es el responsable de manejar si el usuario está autenticado y qué página mostrar.
+      Al cargar la aplicación ejecuta <code>checkSession()</code>.
+    </p>
+
+    <pre><code><span class="cmt">// App.tsx — estado de navegación</span>
+<span class="kw">type</span> <span class="typ">Page</span> = <span class="str">"loading"</span> | <span class="str">"login"</span> | <span class="str">"register"</span> | <span class="str">"dashboard"</span>;
+
+<span class="kw">const</span> [page, setPage] = useState&lt;<span class="typ">Page</span>&gt;(<span class="str">"loading"</span>);
+<span class="kw">const</span> [user, setUser] = useState&lt;<span class="typ">User</span> | <span class="kw">null</span>&gt;(<span class="kw">null</span>);</code></pre>
+
+    <h3>checkSession() — al montar la app</h3>
+    <div class="flow-step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">Busca el token en localStorage</div>
+        <div class="step-desc"><code>localStorage.getItem("token")</code>. Si no existe → muestra LoginPage.</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">Verifica el token con el backend</div>
+        <div class="step-desc">Llama a <code>GET /auth/me</code>. Si el backend lo acepta, devuelve los datos del usuario.</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <div class="step-title">Resultado</div>
+        <div class="step-desc">
+          Token válido → <code>setUser(data)</code>, navega a dashboard.<br>
+          Token inválido / expirado → <code>localStorage.removeItem("token")</code>, navega a login.
+        </div>
+      </div>
+    </div>
+
+    <h3>handleAuthSuccess(token, user)</h3>
+    <p>Se llama tanto al hacer login como al registrarse exitosamente.</p>
+    <pre><code><span class="kw">function</span> <span class="fn">handleAuthSuccess</span>(token: <span class="typ">string</span>, user: <span class="typ">User</span>) {
+  localStorage.<span class="fn">setItem</span>(<span class="str">"token"</span>, token);   <span class="cmt">// guarda JWT</span>
+  <span class="fn">setUser</span>(user);                            <span class="cmt">// actualiza estado</span>
+  <span class="fn">setPage</span>(<span class="str">"dashboard"</span>);                    <span class="cmt">// navega al dashboard</span>
+}</code></pre>
+
+    <h3>handleLogout()</h3>
+    <pre><code><span class="kw">function</span> <span class="fn">handleLogout</span>() {
+  localStorage.<span class="fn">removeItem</span>(<span class="str">"token"</span>);   <span class="cmt">// elimina el token</span>
+  <span class="fn">setUser</span>(<span class="kw">null</span>);
+  <span class="fn">setPage</span>(<span class="str">"login"</span>);
+}</code></pre>
+
+    <div class="callout warn">
+      <strong>El JWT no se decodifica en el frontend.</strong> Solo se almacena y se envía en el header
+      <code>Authorization: Bearer &lt;token&gt;</code>. El backend es quien lo valida en cada petición.
+    </div>
+  </section>
+
+  <!-- ══════════════════ API SERVICE ══════════════════ -->
+  <section id="api-service">
+    <h2>Servicio API</h2>
+    <p>
+      Toda comunicación con el backend pasa por <code>services/api.ts</code>. Es una pequeña capa de
+      abstracción sobre <code>fetch</code> que añade automáticamente el token de autenticación a cada request.
+    </p>
+
+    <pre><code><span class="cmt">// services/api.ts</span>
+<span class="kw">const</span> BASE_URL = <span class="str">"http://localhost:3000"</span>;
+
+<span class="kw">function</span> <span class="fn">getHeaders</span>() {
+  <span class="kw">const</span> token = localStorage.<span class="fn">getItem</span>(<span class="str">"token"</span>);
+  <span class="kw">return</span> {
+    <span class="str">"Content-Type"</span>: <span class="str">"application/json"</span>,
+    ...(token ? { <span class="str">"Authorization"</span>: <span class="str">`Bearer <span class="prop">${token}</span>`</span> } : {}),
+  };
+}</code></pre>
+
+    <h3>Métodos disponibles</h3>
+    <table>
+      <thead><tr><th>Método</th><th>Firma</th><th>HTTP</th></tr></thead>
+      <tbody>
+        <tr><td><code>api.get(endpoint)</code></td><td><code>(url: string) → Promise&lt;any&gt;</code></td><td>GET</td></tr>
+        <tr><td><code>api.post(endpoint, body)</code></td><td><code>(url: string, body: object) → Promise&lt;any&gt;</code></td><td>POST</td></tr>
+        <tr><td><code>api.patch(endpoint, body?)</code></td><td><code>(url: string, body?: object) → Promise&lt;any&gt;</code></td><td>PATCH</td></tr>
+        <tr><td><code>api.delete(endpoint)</code></td><td><code>(url: string) → Promise&lt;any&gt;</code></td><td>DELETE</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Manejo de errores</h3>
+    <p>
+      Si el servidor devuelve un status que no sea 2xx, el servicio lanza una instancia de
+      <code>ApiError</code> que incluye el <code>status</code> HTTP. Esto permite que los componentes
+      hagan manejo específico por código de error:
+    </p>
+    <pre><code><span class="kw">class</span> <span class="typ">ApiError</span> <span class="kw">extends</span> Error {
+  status: <span class="typ">number</span>;
+  <span class="fn">constructor</span>(message: <span class="typ">string</span>, status: <span class="typ">number</span>) {
+    <span class="kw">super</span>(message);
+    <span class="kw">this</span>.status = status;
+  }
+}
+
+<span class="cmt">// Ejemplo de uso en un componente</span>
+<span class="kw">try</span> {
+  <span class="kw">await</span> api.<span class="fn">post</span>(<span class="str">`/projects/<span class="prop">${id}</span>/members`</span>, { email });
+} <span class="kw">catch</span> (err: <span class="typ">any</span>) {
+  <span class="kw">if</span> (err.status === <span class="num">404</span>) setError(<span class="str">"Usuario no encontrado."</span>);
+  <span class="kw">else if</span> (err.status === <span class="num">409</span>) setError(<span class="str">"Ya es miembro o tiene invitación."</span>);
+}</code></pre>
+
+    <h3>Respuesta vacía</h3>
+    <p>
+      Si el backend responde con <code>204 No Content</code> (ej. al eliminar una tarea), el servicio
+      devuelve <code>null</code> en lugar de intentar parsear JSON vacío.
+    </p>
+  </section>
+
+  <!-- ══════════════════ COLORS ══════════════════ -->
+  <section id="colors">
+    <h2>Sistema de Colores</h2>
+    <p>
+      Todos los colores de la app se centralizan en <code>constants/colors.ts</code> como un objeto
+      <code>COLORS</code>. Ningún componente usa colores hardcoded; siempre importan de esta constante.
+    </p>
+
+    <h3>Fondos</h3>
+    <div class="swatch-row">
+      <div class="swatch"><div class="swatch-color" style="background:#333333"></div><span class="swatch-name">bg</span><span class="swatch-hex">#333333</span></div>
+      <div class="swatch"><div class="swatch-color" style="background:#3B3B3B"></div><span class="swatch-name">bgCard</span><span class="swatch-hex">#3B3B3B</span></div>
+      <div class="swatch"><div class="swatch-color" style="background:#252525"></div><span class="swatch-name">bgSidebar</span><span class="swatch-hex">#252525</span></div>
+      <div class="swatch"><div class="swatch-color" style="background:#8EB897"></div><span class="swatch-name">navbar</span><span class="swatch-hex">#8EB897</span></div>
+    </div>
+
+    <h3>Texto</h3>
+    <div class="swatch-row">
+      <div class="swatch"><div class="swatch-color" style="background:#ffffff;border:1px solid #555"></div><span class="swatch-name">text</span><span class="swatch-hex">#ffffff</span></div>
+      <div class="swatch"><div class="swatch-color" style="background:#8EB897"></div><span class="swatch-name">textMuted</span><span class="swatch-hex">#8EB897</span></div>
+    </div>
+
+    <h3>Botones e inputs</h3>
+    <div class="swatch-row">
+      <div class="swatch"><div class="swatch-color" style="background:#C3E8BD"></div><span class="swatch-name">btnFilledBg</span><span class="swatch-hex">#C3E8BD</span></div>
+      <div class="swatch"><div class="swatch-color" style="background:#8EB897"></div><span class="swatch-name">btnBorder</span><span class="swatch-hex">#8EB897</span></div>
+      <div class="swatch"><div class="swatch-color" style="background:#333333"></div><span class="swatch-name">inputBg</span><span class="swatch-hex">#333333</span></div>
+    </div>
+
+    <h3>Prioridades</h3>
+    <div class="swatch-row">
+      <div class="swatch"><div class="swatch-color" style="background:#28B128"></div><span class="swatch-name">priorityLow</span><span class="swatch-hex">#28B128</span></div>
+      <div class="swatch"><div class="swatch-color" style="background:#D7B945"></div><span class="swatch-name">priorityMed</span><span class="swatch-hex">#D7B945</span></div>
+      <div class="swatch"><div class="swatch-color" style="background:#D03636"></div><span class="swatch-name">priorityHigh</span><span class="swatch-hex">#D03636</span></div>
+      <div class="swatch"><div class="swatch-color" style="background:#8E44AD"></div><span class="swatch-name">priorityUrgent</span><span class="swatch-hex">#8E44AD</span></div>
+    </div>
+  </section>
+
+  <!-- ══════════════════ INPUT ══════════════════ -->
+  <section id="input">
+    <h2>Componente: Input</h2>
+    <p>Campo de texto reutilizable con estilo unificado. Se usa en Login, Register, modales de proyecto e invitaciones.</p>
+
+    <h3>Props</h3>
+    <table>
+      <thead><tr><th>Prop</th><th>Tipo</th><th>Requerido</th><th>Descripción</th></tr></thead>
+      <tbody>
+        <tr><td><code>placeholder</code></td><td>string</td><td>Sí</td><td>Texto de placeholder</td></tr>
+        <tr><td><code>value</code></td><td>string</td><td>Sí</td><td>Valor controlado del input</td></tr>
+        <tr><td><code>onChange</code></td><td>(v: string) => void</td><td>Sí</td><td>Callback al cambiar el valor</td></tr>
+        <tr><td><code>type</code></td><td>string</td><td>No</td><td>Tipo del input (default: "text")</td></tr>
+        <tr><td><code>style</code></td><td>CSSProperties</td><td>No</td><td>Estilos adicionales</td></tr>
+      </tbody>
+    </table>
+
+    <pre><code><span class="cmt">// Ejemplo de uso</span>
+&lt;<span class="typ">Input</span>
+  placeholder=<span class="str">"correo@ejemplo.com"</span>
+  type=<span class="str">"email"</span>
+  value={email}
+  onChange={setEmail}
+/&gt;</code></pre>
+  </section>
+
+  <!-- ══════════════════ OUTLINEBTN ══════════════════ -->
+  <section id="outlinebtn">
+    <h2>Componente: OutlineBtn</h2>
+    <p>Botón reutilizable con dos variantes visuales.</p>
+
+    <h3>Props</h3>
+    <table>
+      <thead><tr><th>Prop</th><th>Tipo</th><th>Default</th><th>Descripción</th></tr></thead>
+      <tbody>
+        <tr><td><code>variant</code></td><td>"outline" | "filled"</td><td>"outline"</td><td>Estilo visual del botón</td></tr>
+        <tr><td><code>onClick</code></td><td>() => void</td><td>—</td><td>Manejador del clic</td></tr>
+        <tr><td><code>children</code></td><td>ReactNode</td><td>—</td><td>Texto o contenido del botón</td></tr>
+        <tr><td><code>style</code></td><td>CSSProperties</td><td>—</td><td>Estilos adicionales</td></tr>
+      </tbody>
+    </table>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">variant="outline"</div>
+        <p>Fondo transparente, borde verde (<code>#8EB897</code>), texto verde. Para acciones secundarias.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">variant="filled"</div>
+        <p>Fondo verde claro (<code>#C3E8BD</code>), texto oscuro (<code>#333333</code>). Para la acción principal del formulario.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════ NAVBAR ══════════════════ -->
+  <section id="navbar">
+    <h2>Componente: Navbar</h2>
+    <p>
+      Barra de navegación superior. Muestra el logo, el menú de usuario y gestiona las
+      invitaciones pendientes a proyectos.
+    </p>
+
+    <h3>Props</h3>
+    <table>
+      <thead><tr><th>Prop</th><th>Tipo</th><th>Descripción</th></tr></thead>
+      <tbody>
+        <tr><td><code>user</code></td><td>{ name, email } | null</td><td>Datos del usuario logueado</td></tr>
+        <tr><td><code>onLogout</code></td><td>() => void</td><td>Callback al hacer clic en "Cerrar sesión"</td></tr>
+        <tr><td><code>onInvitationAccepted</code></td><td>() => void</td><td>Se llama cuando el usuario acepta/rechaza una invitación para recargar la data del dashboard</td></tr>
+        <tr><td><code>onLogoClick</code></td><td>() => void (opcional)</td><td>Acción al hacer clic en el logo</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Estado interno</h3>
+    <table>
+      <thead><tr><th>Estado</th><th>Tipo</th><th>Descripción</th></tr></thead>
+      <tbody>
+        <tr><td><code>isOpen</code></td><td>boolean</td><td>Controla si el dropdown del usuario está abierto</td></tr>
+        <tr><td><code>invitations</code></td><td>Invitation[]</td><td>Lista de invitaciones pendientes</td></tr>
+        <tr><td><code>loadingId</code></td><td>number | null</td><td>ID de la invitación que está siendo procesada (para deshabilitar botones)</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Funciones clave</h3>
+    <pre><code><span class="cmt">// Carga invitaciones pendientes desde el backend</span>
+<span class="kw">async function</span> <span class="fn">loadInvitations</span>() {
+  <span class="kw">const</span> data = <span class="kw">await</span> api.<span class="fn">get</span>(<span class="str">"/notifications/invitations"</span>);
+  <span class="fn">setInvitations</span>(data);
+}
+
+<span class="cmt">// Se ejecuta al montar y cuando cambia el usuario</span>
+useEffect(() => { <span class="fn">loadInvitations</span>(); }, [user]);
+
+<span class="cmt">// Acepta una invitación y recarga el dashboard</span>
+<span class="kw">async function</span> <span class="fn">handleAccept</span>(id: <span class="typ">number</span>) {
+  <span class="fn">setLoadingId</span>(id);
+  <span class="kw">await</span> api.<span class="fn">patch</span>(<span class="str">`/notifications/invitations/<span class="prop">${id}</span>/accept`</span>);
+  <span class="kw">await</span> <span class="fn">loadInvitations</span>();
+  onInvitationAccepted?.();   <span class="cmt">// recarga proyectos y tareas en el dashboard</span>
+  <span class="fn">setLoadingId</span>(<span class="kw">null</span>);
+}
+
+<span class="cmt">// Rechaza una invitación</span>
+<span class="kw">async function</span> <span class="fn">handleDecline</span>(id: <span class="typ">number</span>) {
+  <span class="fn">setLoadingId</span>(id);
+  <span class="kw">await</span> api.<span class="fn">delete</span>(<span class="str">`/notifications/invitations/<span class="prop">${id}</span>/decline`</span>);
+  <span class="kw">await</span> <span class="fn">loadInvitations</span>();
+  <span class="fn">setLoadingId</span>(<span class="kw">null</span>);
+}</code></pre>
+
+    <h3>Badge de invitaciones</h3>
+    <p>
+      Si hay invitaciones pendientes (<code>invitations.length > 0</code>), aparece un círculo rojo con el
+      número en la esquina superior derecha del icono de usuario. Solo se muestra cuando hay invitaciones.
+    </p>
+
+    <h3>Detección de clic fuera (click-outside)</h3>
+    <p>
+      Usa <code>useRef</code> + <code>useEffect</code> para detectar clics fuera del dropdown y cerrarlo
+      automáticamente:
+    </p>
+    <pre><code>useEffect(() => {
+  <span class="kw">function</span> <span class="fn">handleClickOutside</span>(e: <span class="typ">MouseEvent</span>) {
+    <span class="kw">if</span> (dropdownRef.current && !dropdownRef.current.<span class="fn">contains</span>(e.target <span class="kw">as</span> <span class="typ">Node</span>)) {
+      <span class="fn">setIsOpen</span>(<span class="kw">false</span>);
+    }
+  }
+  document.<span class="fn">addEventListener</span>(<span class="str">"mousedown"</span>, handleClickOutside);
+  <span class="kw">return</span> () => document.<span class="fn">removeEventListener</span>(<span class="str">"mousedown"</span>, handleClickOutside);
+}, []);</code></pre>
+  </section>
+
+  <!-- ══════════════════ LOGIN ══════════════════ -->
+  <section id="login">
+    <h2>Página: LoginPage</h2>
+    <p>Formulario de inicio de sesión. Muestra logo, dos campos (email, contraseña) y un botón.</p>
+
+    <h3>Props</h3>
+    <table>
+      <thead><tr><th>Prop</th><th>Descripción</th></tr></thead>
+      <tbody>
+        <tr><td><code>onLoginSuccess(token, user)</code></td><td>Callback al autenticarse correctamente</td></tr>
+        <tr><td><code>onGoRegister()</code></td><td>Navega a la pantalla de registro</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Flujo</h3>
+    <pre><code><span class="cmt">// POST /auth/login</span>
+<span class="kw">const</span> data = <span class="kw">await</span> api.<span class="fn">post</span>(<span class="str">"/auth/login"</span>, { email, password });
+<span class="cmt">// data = { accessToken: "eyJ...", user: { id, name, email } }</span>
+onLoginSuccess(data.accessToken, data.user);</code></pre>
+
+    <p>En caso de error → muestra <em>"Credenciales inválidas."</em> en rojo.</p>
+  </section>
+
+  <!-- ══════════════════ REGISTER ══════════════════ -->
+  <section id="register">
+    <h2>Página: RegisterPage</h2>
+    <p>Formulario de registro con nombre, correo, contraseña y confirmación de contraseña.</p>
+
+    <h3>Validaciones del lado frontend (antes de llamar a la API)</h3>
+    <ul>
+      <li>Todos los campos son requeridos</li>
+      <li>Las contraseñas deben coincidir</li>
+      <li>La contraseña debe tener mínimo 6 caracteres</li>
+    </ul>
+
+    <h3>Manejo de errores del backend</h3>
+    <table>
+      <thead><tr><th>Status HTTP</th><th>Mensaje mostrado</th></tr></thead>
+      <tbody>
+        <tr><td>409 Conflict</td><td>"Este correo ya está vinculado a una cuenta."</td></tr>
+        <tr><td>Otro error</td><td>"Ocurrió un error. Intenta de nuevo."</td></tr>
+      </tbody>
+    </table>
+
+    <pre><code><span class="cmt">// POST /auth/register</span>
+<span class="kw">const</span> data = <span class="kw">await</span> api.<span class="fn">post</span>(<span class="str">"/auth/register"</span>, {
+  email: form.correo,
+  name: form.name,
+  password: form.password
+});
+onRegisterSuccess(data.accessToken, data.user);</code></pre>
+  </section>
+
+  <!-- ══════════════════ DASHBOARD ══════════════════ -->
+  <section id="dashboard">
+    <h2>Página: DashboardPage</h2>
+    <p>
+      Componente contenedor principal. Gestiona todo el estado de la aplicación y pasa datos a los
+      sub-componentes mediante props. Es el único componente que hace llamadas a la API para datos de
+      tareas y proyectos.
+    </p>
+
+    <h3>Estado global del dashboard</h3>
+    <table>
+      <thead><tr><th>Estado</th><th>Tipo</th><th>Descripción</th></tr></thead>
+      <tbody>
+        <tr><td><code>projects</code></td><td>Project[]</td><td>Todos los proyectos del usuario</td></tr>
+        <tr><td><code>activeProject</code></td><td>Project | null</td><td>Proyecto seleccionado en la barra lateral (null = todas las tareas)</td></tr>
+        <tr><td><code>tasks</code></td><td>Task[]</td><td>Todas las tareas del usuario (de todos los proyectos)</td></tr>
+        <tr><td><code>filterAssignedToMe</code></td><td>boolean</td><td>Activa el filtro "Asignadas a mí"</td></tr>
+        <tr><td><code>showModal</code></td><td>boolean</td><td>Controla visibilidad del modal de nueva tarea</td></tr>
+        <tr><td><code>showProjectModal</code></td><td>boolean</td><td>Controla visibilidad del modal de nuevo proyecto</td></tr>
+        <tr><td><code>viewingTask</code></td><td>Task | null</td><td>Tarea que se está visualizando en ViewTaskModal</td></tr>
+        <tr><td><code>editingTask</code></td><td>Task | null</td><td>Tarea que se está editando</td></tr>
+        <tr><td><code>taskToDelete</code></td><td>Task | null</td><td>Tarea pendiente de confirmación de eliminación</td></tr>
+        <tr><td><code>editingProject</code></td><td>Project | null</td><td>Proyecto que se está editando</td></tr>
+        <tr><td><code>projectToDelete</code></td><td>Project | null</td><td>Proyecto pendiente de eliminación</td></tr>
+        <tr><td><code>invitingProject</code></td><td>Project | null</td><td>Proyecto al que se está invitando un miembro</td></tr>
+      </tbody>
+    </table>
+
+    <h3>loadData() — carga inicial y recarga</h3>
+    <pre><code><span class="kw">async function</span> <span class="fn">loadData</span>() {
+  <span class="kw">const</span> projs = <span class="kw">await</span> api.<span class="fn">get</span>(<span class="str">"/projects"</span>);
+  <span class="fn">setProjects</span>(projs);
+  <span class="kw">const</span> allTasks = <span class="kw">await</span> api.<span class="fn">get</span>(<span class="str">"/tasks"</span>);
+  <span class="fn">setTasks</span>(allTasks);
+}</code></pre>
+    <p>Se ejecuta al montar el componente y después de cualquier operación exitosa.</p>
+
+    <h3>Lógica de filtrado de tareas</h3>
+    <pre><code><span class="cmt">// 1. Filtrar por proyecto activo</span>
+<span class="kw">const</span> projectTasks = activeProject
+  ? tasks.<span class="fn">filter</span>(t => t.projectId === activeProject.id)
+  : tasks;
+
+<span class="cmt">// 2. Opcionalmente filtrar por "asignadas a mí"</span>
+<span class="kw">const</span> filteredTasks = filterAssignedToMe && user
+  ? projectTasks.<span class="fn">filter</span>(t => t.assignedTo?.id === user.id)
+  : projectTasks;
+
+<span class="cmt">// 3. Separar en tres secciones</span>
+<span class="kw">const</span> todayStr = <span class="kw">new</span> <span class="typ">Date</span>().<span class="fn">toISOString</span>().<span class="fn">split</span>(<span class="str">"T"</span>)[<span class="num">0</span>];
+
+filteredTasks.<span class="fn">forEach</span>(task => {
+  <span class="kw">const</span> taskDate = task.dueDate?.<span class="fn">split</span>(<span class="str">"T"</span>)[<span class="num">0</span>];
+  <span class="kw">if</span> (task.status === <span class="str">"COMPLETED"</span>) completedTasks.<span class="fn">push</span>(task);
+  <span class="kw">else if</span> (taskDate && taskDate < todayStr) overdueTasks.<span class="fn">push</span>(task);
+  <span class="kw">else</span> pendingTasks.<span class="fn">push</span>(task);
+});</code></pre>
+
+    <h3>Patrón de actualización optimista</h3>
+    <p>
+      Para una mejor experiencia de usuario, el dashboard actualiza el estado local
+      <em>antes</em> de que el servidor confirme la operación. Si la petición falla, revierte al estado anterior.
+    </p>
+    <pre><code><span class="cmt">// Ejemplo: eliminar tarea con actualización optimista</span>
+<span class="kw">async function</span> <span class="fn">handleDeleteTask</span>(id: <span class="typ">number</span>) {
+  <span class="kw">const</span> previousTasks = [...tasks];          <span class="cmt">// guarda estado previo</span>
+  <span class="fn">setTasks</span>(prev => prev.<span class="fn">filter</span>(t => t.id !== id)); <span class="cmt">// actualiza UI inmediatamente</span>
+
+  <span class="kw">try</span> {
+    <span class="kw">await</span> api.<span class="fn">delete</span>(<span class="str">`/tasks/<span class="prop">${id}</span>`</span>);
+    <span class="kw">await</span> <span class="fn">loadData</span>();                          <span class="cmt">// recarga para sincronizar</span>
+  } <span class="kw">catch</span> {
+    <span class="fn">setTasks</span>(previousTasks);                  <span class="cmt">// revierte si hay error</span>
+  }
+}</code></pre>
+
+    <h3>Layout del dashboard</h3>
+    <div class="card">
+      <div class="card-title">Estructura visual</div>
+      <pre style="background:#1a1a1a;border:none;padding:12px;font-size:12px;color:#888"><code>┌────────────────────────────────────────────────────────┐
+│ Navbar (Infuse logo + user dropdown)                   │
+├──────────────────┬─────────────────────────────────────┤
+│ ProjectSidebar   │  Header: nombre del proyecto + "+"  │
+│ (220px)          │─────────────────────────────────────│
+│                  │  ── Pendientes ──                   │
+│ • Todas las      │  TaskRow | TaskRow | ...            │
+│   tareas         │                                     │
+│                  │  ── Atrasadas ──                    │
+│ PROYECTOS        │  TaskRow | ...                      │
+│  ▾ Proyecto A    │                                     │
+│    • Tarea 1     │  ── Completadas ──                  │
+│    • Tarea 2     │  TaskRow | ...                      │
+│  ▸ Proyecto B    │                                     │
+│                  │  [ProjectCharts]                    │
+└──────────────────┴─────────────────────────────────────┘</code></pre>
+    </div>
+  </section>
+
+  <!-- ══════════════════ SIDEBAR ══════════════════ -->
+  <section id="sidebar-comp">
+    <h2>Componente: ProjectSidebar</h2>
+    <p>Barra lateral izquierda para navegación entre proyectos.</p>
+
+    <h3>Props</h3>
+    <table>
+      <thead><tr><th>Prop</th><th>Descripción</th></tr></thead>
+      <tbody>
+        <tr><td><code>projects</code></td><td>Lista de proyectos para mostrar</td></tr>
+        <tr><td><code>activeProject</code></td><td>Proyecto seleccionado actualmente</td></tr>
+        <tr><td><code>tasks</code></td><td>Todas las tareas (para mostrar en sub-listas)</td></tr>
+        <tr><td><code>onSelectProject(proj | null)</code></td><td>Cambia el proyecto activo</td></tr>
+        <tr><td><code>onCreateProjectClick()</code></td><td>Abre el modal de nuevo proyecto</td></tr>
+        <tr><td><code>onEditProjectClick(proj)</code></td><td>Abre el modal de edición</td></tr>
+        <tr><td><code>onDeleteProjectClick(proj)</code></td><td>Abre la confirmación de eliminación</td></tr>
+        <tr><td><code>onInviteMemberClick(proj)</code></td><td>Abre el modal de invitación</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Sub-componente: ProjectSidebarRow</h3>
+    <p>Cada fila de proyecto con expansión y botones de acción (visibles al hacer hover).</p>
+    <ul>
+      <li><strong>ChevronDown</strong>: expande/colapsa la lista de tareas del proyecto con animación de <code>max-height</code></li>
+      <li><strong>UserPlus</strong>: abre InviteMemberModal</li>
+      <li><strong>Pencil</strong>: abre EditProjectModal</li>
+      <li><strong>Trash2</strong>: abre DeleteProjectModal</li>
+    </ul>
+
+    <h3>Sub-componente: SidebarTaskItem</h3>
+    <p>
+      Muestra el título de una tarea en la sub-lista expandida. Al hacer hover durante
+      <strong>1 segundo</strong>, aparece un tooltip flotante con los detalles completos de la tarea
+      (cargados desde <code>GET /tasks/:id</code>).
+    </p>
+    <pre><code><span class="cmt">// Lógica del tooltip con delay</span>
+<span class="kw">const</span> handleMouseEnter = () => {
+  timerRef.current = <span class="fn">setTimeout</span>(<span class="kw">async</span> () => {
+    <span class="fn">setHovered</span>(<span class="kw">true</span>);
+    <span class="kw">if</span> (!detailedTask) {
+      <span class="kw">const</span> data = <span class="kw">await</span> api.<span class="fn">get</span>(<span class="str">`/tasks/<span class="prop">${task.id}</span>`</span>);
+      <span class="fn">setDetailedTask</span>(data);
+    }
+  }, <span class="num">1000</span>);  <span class="cmt">// espera 1 segundo antes de mostrar</span>
+};
+
+<span class="kw">const</span> handleMouseLeave = () => {
+  <span class="fn">clearTimeout</span>(timerRef.current);  <span class="cmt">// cancela si el usuario mueve el mouse</span>
+  <span class="fn">setHovered</span>(<span class="kw">false</span>);
+};</code></pre>
+  </section>
+
+  <!-- ══════════════════ TASKROW ══════════════════ -->
+  <section id="taskrow">
+    <h2>Componente: TaskRow</h2>
+    <p>Fila individual de tarea en el dashboard. Muestra el estado visual de la tarea y permite interacciones.</p>
+
+    <h3>Props</h3>
+    <table>
+      <thead><tr><th>Prop</th><th>Tipo</th><th>Descripción</th></tr></thead>
+      <tbody>
+        <tr><td><code>task</code></td><td>Task</td><td>Datos de la tarea</td></tr>
+        <tr><td><code>onToggleStatus(task)</code></td><td>función</td><td>Alterna entre PENDING y COMPLETED</td></tr>
+        <tr><td><code>onViewClick(task)</code></td><td>función</td><td>Abre ViewTaskModal</td></tr>
+        <tr><td><code>onEditClick(task)</code></td><td>función</td><td>Abre EditTaskModal</td></tr>
+        <tr><td><code>onDeleteClick(task)</code></td><td>función</td><td>Abre DeleteTaskModal</td></tr>
+        <tr><td><code>isOverdue</code></td><td>boolean</td><td>Aplica estilos de tarea atrasada</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Estilos condicionales</h3>
+    <table>
+      <thead><tr><th>Estado</th><th>Visual</th></tr></thead>
+      <tbody>
+        <tr><td>PENDING</td><td>Círculo con borde, texto normal</td></tr>
+        <tr><td>COMPLETED</td><td>Círculo relleno verde (<code>#C3E8BD</code>), título con tachado, 50% opacidad</td></tr>
+        <tr><td>Atrasada (overdue)</td><td>Borde del círculo rojo, sufijo "(Vencida)" en el título</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Nombre del proyecto</h3>
+    <p>
+      Si <code>task.project</code> existe, se muestra debajo del título en texto pequeño y tenue
+      (<code>fontSize: 11, opacity: 0.6</code>). Si la tarea no pertenece a ningún proyecto, no se muestra nada.
+    </p>
+  </section>
+
+  <!-- ══════════════════ SECTION HEADER ══════════════════ -->
+  <section id="sectionheader">
+    <h2>Componente: SectionHeader</h2>
+    <p>
+      Encabezado decorativo de sección. Fondo verde (<code>COLORS.sectionHeader</code>), texto blanco en negrita.
+      Define las columnas visualmente: descripción, fecha, prioridad, acciones.
+    </p>
+    <p>Se usa tres veces en el dashboard: <em>Pendientes</em>, <em>Atrasadas</em>, <em>Completadas</em>.</p>
+  </section>
+
+  <!-- ══════════════════ CHARTS ══════════════════ -->
+  <section id="charts">
+    <h2>Componente: ProjectCharts</h2>
+    <p>Gráficas SVG para estadísticas del proyecto. Solo aparece cuando hay un proyecto activo y tiene tareas.</p>
+
+    <h3>Props</h3>
+    <table>
+      <thead><tr><th>Prop</th><th>Tipo</th><th>Descripción</th></tr></thead>
+      <tbody>
+        <tr><td><code>tasks</code></td><td>Task[]</td><td>Tareas a analizar</td></tr>
+        <tr><td><code>isPieOnly</code></td><td>boolean</td><td>Si es true, solo muestra la gráfica circular (modo dashboard)</td></tr>
+      </tbody>
+    </table>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Gráfica circular (Pie)</div>
+        <ul>
+          <li>SVG con <code>stroke-dasharray</code> y <code>stroke-dashoffset</code></li>
+          <li>Porcentaje de tareas completadas</li>
+          <li>Texto: "X de Y tareas completadas"</li>
+          <li>Siempre se muestra</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title">Gráfica de barras (Bar)</div>
+        <ul>
+          <li>Una barra por nivel de prioridad</li>
+          <li>Altura relativa al máximo</li>
+          <li>Colores de prioridad (<code>COLORS.priority*</code>)</li>
+          <li>Solo si <code>isPieOnly = false</code></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════ MODALES ══════════════════ -->
+  <section id="newtask">
+    <h2>Modal: NewTaskModal</h2>
+    <p>Formulario para crear una nueva tarea. Se muestra al pulsar el botón "+" en el header del dashboard.</p>
+
+    <h3>Props</h3>
+    <table>
+      <thead><tr><th>Prop</th><th>Tipo</th><th>Descripción</th></tr></thead>
+      <tbody>
+        <tr><td><code>projectId</code></td><td>string</td><td>"0" si no hay proyecto activo, o el ID del proyecto</td></tr>
+        <tr><td><code>isOwner</code></td><td>boolean</td><td>Si el usuario actual es dueño del proyecto</td></tr>
+        <tr><td><code>projectMembers</code></td><td>ProjectMember[]</td><td>Miembros del proyecto (excluyendo al usuario actual)</td></tr>
+        <tr><td><code>onClose()</code></td><td>función</td><td>Cierra el modal</td></tr>
+        <tr><td><code>onSave(task)</code></td><td>función</td><td>Callback con los datos del formulario</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Campos del formulario</h3>
+    <table>
+      <thead><tr><th>Campo</th><th>Tipo</th><th>Requerido</th><th>Validación</th></tr></thead>
+      <tbody>
+        <tr><td>Título</td><td>Input</td><td>Sí</td><td>Mínimo 2 caracteres</td></tr>
+        <tr><td>Descripción</td><td>textarea</td><td>No</td><td>—</td></tr>
+        <tr><td>Fecha de vencimiento</td><td>date input</td><td>Sí</td><td>Campo requerido</td></tr>
+        <tr><td>Prioridad</td><td>4 botones</td><td>Sí</td><td>Uno de LOW/MEDIUM/HIGH/URGENT</td></tr>
+        <tr><td>Asignar a</td><td>select</td><td>No</td><td>Solo visible si isOwner + hay miembros + hay proyecto</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Lógica de visibilidad del campo "Asignar a"</h3>
+    <pre><code><span class="kw">const</span> showAssignField =
+  projectId !== <span class="str">"0"</span> &&     <span class="cmt">// hay un proyecto seleccionado</span>
+  isOwner &&                 <span class="cmt">// el usuario es dueño</span>
+  projectMembers.length > <span class="num">0</span>; <span class="cmt">// hay otros miembros</span></code></pre>
+  </section>
+
+  <section id="viewtask">
+    <h2>Modal: ViewTaskModal</h2>
+    <p>Vista de solo lectura de los detalles completos de una tarea. Se abre al hacer clic en el ícono de ojo en TaskRow.</p>
+    <ul>
+      <li>Título grande</li>
+      <li>Badge de prioridad con color</li>
+      <li>Fecha de vencimiento con ícono de calendario</li>
+      <li>Badge de estado (PENDING / IN_PROGRESS / COMPLETED)</li>
+      <li>Descripción completa (con <code>white-space: pre-wrap</code> para respetar saltos de línea)</li>
+    </ul>
+  </section>
+
+  <section id="edittask">
+    <h2>Modal: EditTaskModal</h2>
+    <p>Mismo formulario que NewTaskModal pero pre-poblado con los datos actuales de la tarea. No incluye campo de asignación.</p>
+    <p>Al guardar llama a <code>onSave(id, { title, desc, priority, dueDate })</code>.</p>
+  </section>
+
+  <section id="deletetask">
+    <h2>Modal: DeleteTaskModal</h2>
+    <p>Diálogo de confirmación antes de eliminar una tarea.</p>
+    <ul>
+      <li>Muestra el título de la tarea en rojo</li>
+      <li>Mensaje "Esta acción no se puede deshacer"</li>
+      <li>Botón "Cancelar" (outline) y "Eliminar" (rojo)</li>
+    </ul>
+  </section>
+
+  <section id="newproject">
+    <h2>Modal: NewProjectModal</h2>
+    <p>Formulario simple con un campo de nombre para crear un proyecto. El botón "Crear" se deshabilita si el nombre está vacío.</p>
+  </section>
+
+  <section id="editproject">
+    <h2>Modal: EditProjectModal</h2>
+    <p>Igual que NewProjectModal pero pre-poblado con el nombre actual del proyecto. Llama a <code>onSave(id, newName)</code>.</p>
+  </section>
+
+  <section id="deleteproject">
+    <h2>Modal: DeleteProjectModal</h2>
+    <p>Confirmación para eliminar un proyecto. Incluye advertencia de que <strong>todas las tareas vinculadas serán eliminadas permanentemente</strong> (porque el backend hace cascade delete).</p>
+  </section>
+
+  <section id="invitemember">
+    <h2>Modal: InviteMemberModal</h2>
+    <p>Permite al dueño de un proyecto invitar a otro usuario mediante su correo electrónico.</p>
+
+    <h3>Props</h3>
+    <table>
+      <thead><tr><th>Prop</th><th>Descripción</th></tr></thead>
+      <tbody>
+        <tr><td><code>project</code></td><td>Proyecto al que se va a invitar</td></tr>
+        <tr><td><code>onClose()</code></td><td>Cierra el modal</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Manejo de errores por código</h3>
+    <table>
+      <thead><tr><th>Status</th><th>Mensaje</th></tr></thead>
+      <tbody>
+        <tr><td>404</td><td>"No se encontró ningún usuario con ese correo."</td></tr>
+        <tr><td>409</td><td>"Ese usuario ya es miembro o tiene una invitación pendiente."</td></tr>
+        <tr><td>403</td><td>"Solo el dueño del proyecto puede invitar miembros."</td></tr>
+        <tr><td>Otro</td><td>"Ocurrió un error. Intenta de nuevo."</td></tr>
+      </tbody>
+    </table>
+
+    <p>Al invitar exitosamente muestra un mensaje de éxito sin cerrar el modal, para poder invitar más personas.</p>
+  </section>
+
+  <hr />
+
+  <!-- ══════════════════ FLUJOS COMPLETOS ══════════════════ -->
+  <section id="flow-login">
+    <h2>Flujo Completo: Login</h2>
+
+    <div class="flow-step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">Usuario escribe email y contraseña en LoginPage</div>
+        <div class="step-desc">Estado local: <code>email</code>, <code>password</code> en useState</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">Clic en "Iniciar sesión"</div>
+        <div class="step-desc">Se llama a <code>api.post("/auth/login", { email, password })</code></div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <div class="step-title">Backend valida credenciales y devuelve JWT</div>
+        <div class="step-desc"><code>{ accessToken: "eyJ...", user: { id, name, email } }</code></div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <div class="step-title">onLoginSuccess(token, user)</div>
+        <div class="step-desc">Guarda token en localStorage, setUser, navega a "dashboard"</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <div class="step-title">App muestra DashboardPage</div>
+        <div class="step-desc">DashboardPage se monta y ejecuta <code>loadData()</code></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="flow-create-task">
+    <h2>Flujo Completo: Crear Tarea</h2>
+
+    <div class="flow-step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">Usuario hace clic en "+" en el header</div>
+        <div class="step-desc"><code>setShowModal(true)</code> → se renderiza <code>&lt;NewTaskModal /&gt;</code></div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">El modal recibe props de contexto</div>
+        <div class="step-desc">
+          <code>projectId</code>: ID del proyecto activo o "0"<br>
+          <code>isOwner</code>: <code>activeProject.userId === user.id</code><br>
+          <code>projectMembers</code>: miembros del proyecto excluyendo al usuario actual
+        </div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <div class="step-title">Usuario llena el formulario y hace clic en "Crear Task"</div>
+        <div class="step-desc">Validación frontend: título ≥ 2 chars, fecha requerida, prioridad requerida</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <div class="step-title">onSave() llama a handleSaveTask() en DashboardPage</div>
+        <div class="step-desc">Se crea una tarea optimista con ID negativo (<code>Date.now() * -1</code>) y se añade al estado</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <div class="step-title">POST /tasks enviado al backend</div>
+        <div class="step-desc">
+<pre><code>{
+  title, description, priority, dueDate,
+  status: "PENDING",
+  projectId: activeProject?.id ?? null,
+  assignedToId: assignedToId ?? null
+}</code></pre>
+        </div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">6</div>
+      <div class="step-body">
+        <div class="step-title">Backend procesa la lógica de asignación</div>
+        <div class="step-desc">
+          Si el usuario NO es dueño → auto-asigna la tarea al creador.<br>
+          Si es dueño y eligió asignado → asigna a ese usuario.
+        </div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">7</div>
+      <div class="step-body">
+        <div class="step-title">Éxito: loadData() recarga todo</div>
+        <div class="step-desc">La tarea optimista es reemplazada por la real con ID del servidor. Error: se elimina la tarea optimista.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="flow-toggle">
+    <h2>Flujo Completo: Completar/Descompletar Tarea</h2>
+
+    <div class="flow-step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">Usuario hace clic en el círculo de estado en TaskRow</div>
+        <div class="step-desc">Se llama a <code>onToggleStatus(task)</code> → <code>toggleTaskStatus(task)</code> en DashboardPage</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">Actualización optimista</div>
+        <div class="step-desc">Se invierte el status en el estado local inmediatamente para feedback visual instantáneo</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <div class="step-title">API call según el estado actual</div>
+        <div class="step-desc">
+          Si era COMPLETED → <code>PATCH /tasks/{id}/uncomplete</code><br>
+          Si era PENDING o IN_PROGRESS → <code>PATCH /tasks/{id}/complete</code>
+        </div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <div class="step-title">Recarga y reorden de tareas</div>
+        <div class="step-desc"><code>loadData()</code> recarga, la tarea aparece en la sección correcta (Completadas / Pendientes)</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="flow-invite">
+    <h2>Flujo Completo: Invitar Miembro</h2>
+
+    <div class="flow-step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">Dueño hace hover sobre un proyecto en la barra lateral</div>
+        <div class="step-desc">Aparecen los botones de acción (UserPlus, Pencil, Trash)</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">Clic en UserPlus (icono de persona con +)</div>
+        <div class="step-desc"><code>onInviteMemberClick(proj)</code> → <code>setInvitingProject(proj)</code> en DashboardPage</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <div class="step-title">Se renderiza InviteMemberModal</div>
+        <div class="step-desc">Usuario escribe el correo del invitado y hace clic en "Enviar invitación"</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <div class="step-title">POST /projects/{id}/members</div>
+        <div class="step-desc">El backend busca al usuario, crea un registro de ProjectMember con status "pending" y una Notification</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">5</div>
+      <div class="step-body">
+        <div class="step-title">Éxito: mensaje "Invitación enviada" sin cerrar el modal</div>
+        <div class="step-desc">El campo de correo se limpia para poder invitar a otro usuario</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="flow-invitation">
+    <h2>Flujo Completo: Aceptar Invitación</h2>
+
+    <div class="flow-step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">Usuario invitado abre el dropdown de usuario en Navbar</div>
+        <div class="step-desc">Navbar ya cargó las invitaciones al montarse → muestra sección de invitaciones</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">Hace clic en "Aceptar" en la invitación</div>
+        <div class="step-desc"><code>handleAccept(invitationId)</code> → <code>PATCH /notifications/invitations/{id}/accept</code></div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <div class="step-title">Backend actualiza ProjectMember.status a "accepted"</div>
+        <div class="step-desc">El usuario ahora tiene acceso a las tareas del proyecto</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <div class="step-title">Navbar recarga invitaciones, DashboardPage llama a loadData()</div>
+        <div class="step-desc"><code>onInvitationAccepted()</code> dispara <code>loadData()</code> → el proyecto aparece en la barra lateral</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="flow-filter">
+    <h2>Flujo Completo: Filtro "Asignadas a mí"</h2>
+
+    <div class="flow-step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">Usuario hace clic en el botón "Asignadas a mí"</div>
+        <div class="step-desc"><code>setFilterAssignedToMe(v => !v)</code> — toggle booleano</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">Re-render automático</div>
+        <div class="step-desc">React re-renderiza con la nueva lógica de filtrado (no hay llamada a la API)</div>
+      </div>
+    </div>
+    <div class="flow-step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <div class="step-title">Solo se muestran tareas donde assignedTo.id === user.id</div>
+        <div class="step-desc">Funciona tanto en "Todas las tareas" como dentro de un proyecto específico</div>
+      </div>
+    </div>
+  </section>
+
+  <hr />
+
+  <!-- ══════════════════ ENDPOINTS ══════════════════ -->
+  <section id="endpoints">
+    <h2>Endpoints Usados por el Frontend</h2>
+
+    <h3>Autenticación</h3>
+    <table>
+      <thead><tr><th>Componente</th><th>Método</th><th>Endpoint</th><th>Body</th></tr></thead>
+      <tbody>
+        <tr><td>App.tsx</td><td>GET</td><td>/auth/me</td><td>—</td></tr>
+        <tr><td>LoginPage</td><td>POST</td><td>/auth/login</td><td>{ email, password }</td></tr>
+        <tr><td>RegisterPage</td><td>POST</td><td>/auth/register</td><td>{ email, name, password }</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Proyectos</h3>
+    <table>
+      <thead><tr><th>Componente</th><th>Método</th><th>Endpoint</th><th>Body</th></tr></thead>
+      <tbody>
+        <tr><td>DashboardPage</td><td>GET</td><td>/projects</td><td>—</td></tr>
+        <tr><td>DashboardPage</td><td>POST</td><td>/projects</td><td>{ name }</td></tr>
+        <tr><td>DashboardPage</td><td>PATCH</td><td>/projects/:id</td><td>{ name }</td></tr>
+        <tr><td>DashboardPage</td><td>DELETE</td><td>/projects/:id</td><td>—</td></tr>
+        <tr><td>InviteMemberModal</td><td>POST</td><td>/projects/:id/members</td><td>{ email }</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Tareas</h3>
+    <table>
+      <thead><tr><th>Componente</th><th>Método</th><th>Endpoint</th><th>Body / Notas</th></tr></thead>
+      <tbody>
+        <tr><td>DashboardPage</td><td>GET</td><td>/tasks</td><td>Devuelve todas las tareas visibles para el usuario</td></tr>
+        <tr><td>SidebarTaskItem</td><td>GET</td><td>/tasks/:id</td><td>Detalles al hacer hover en la barra lateral</td></tr>
+        <tr><td>DashboardPage</td><td>POST</td><td>/tasks</td><td>{ title, description, priority, dueDate, status, projectId, assignedToId }</td></tr>
+        <tr><td>DashboardPage</td><td>PATCH</td><td>/tasks/:id</td><td>{ title, description, priority, dueDate }</td></tr>
+        <tr><td>DashboardPage</td><td>PATCH</td><td>/tasks/:id/complete</td><td>Sin body</td></tr>
+        <tr><td>DashboardPage</td><td>PATCH</td><td>/tasks/:id/uncomplete</td><td>Sin body</td></tr>
+        <tr><td>DashboardPage</td><td>DELETE</td><td>/tasks/:id</td><td>—</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Notificaciones / Invitaciones</h3>
+    <table>
+      <thead><tr><th>Componente</th><th>Método</th><th>Endpoint</th><th>Notas</th></tr></thead>
+      <tbody>
+        <tr><td>Navbar</td><td>GET</td><td>/notifications/invitations</td><td>Se carga al montar y al cambiar el usuario</td></tr>
+        <tr><td>Navbar</td><td>PATCH</td><td>/notifications/invitations/:id/accept</td><td>Acepta la invitación</td></tr>
+        <tr><td>Navbar</td><td>DELETE</td><td>/notifications/invitations/:id/decline</td><td>Rechaza la invitación</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ══════════════════ PATTERNS ══════════════════ -->
+  <section id="patterns">
+    <h2>Patrones Clave del Frontend</h2>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Actualización Optimista</div>
+        <p>El estado local se actualiza inmediatamente antes de que la API confirme la operación. Si la API falla, se revierte el estado. Esto hace la UI sentirse instantánea.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Routing por Estado</div>
+        <p>No hay react-router. La navegación entre pantallas es simplemente <code>setPage("dashboard")</code>. App.tsx renderiza condicionalmente según el valor de <code>page</code>.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Token en localStorage</div>
+        <p>El JWT se guarda en <code>localStorage</code> al hacer login. Se lee en cada petición de la API. Al hacer logout se elimina.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Props Drilling</div>
+        <p>El estado vive en DashboardPage y se pasa hacia abajo mediante props. No hay Context ni estado global. Funciona bien para esta escala de app.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Modales con Backdrop</div>
+        <p>Todos los modales usan <code>position: fixed; inset: 0</code> con fondo semi-transparente. Haciendo clic en el backdrop (fuera del modal) se cierra.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Estilos Inline</div>
+        <p>No hay archivos CSS separados para los componentes del dashboard. Todos los estilos son objetos inline con valores de <code>COLORS</code>. Evita colisiones de CSS.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════ INTERFACES ══════════════════ -->
+  <section id="interfaces">
+    <h2>Interfaces TypeScript Principales</h2>
+
+    <h3>Task</h3>
+    <pre><code><span class="kw">interface</span> <span class="typ">Task</span> {
+  id: <span class="typ">number</span>;
+  title: <span class="typ">string</span>;
+  description?: <span class="typ">string</span>;
+  priority: <span class="str">"LOW"</span> | <span class="str">"MEDIUM"</span> | <span class="str">"HIGH"</span> | <span class="str">"URGENT"</span>;
+  status: <span class="str">"PENDING"</span> | <span class="str">"IN_PROGRESS"</span> | <span class="str">"COMPLETED"</span>;
+  dueDate?: <span class="typ">string</span>;        <span class="cmt">// ISO 8601: "2026-05-30T..."</span>
+  projectId: <span class="typ">number</span> | <span class="kw">null</span>;
+  userId?: <span class="typ">number</span>;          <span class="cmt">// ID del creador</span>
+  project?: { id: <span class="typ">number</span>; name: <span class="typ">string</span> } | <span class="kw">null</span>;
+  assignedTo?: { id: <span class="typ">number</span>; name: <span class="typ">string</span>; email: <span class="typ">string</span> } | <span class="kw">null</span>;
+}</code></pre>
+
+    <h3>Project</h3>
+    <pre><code><span class="kw">interface</span> <span class="typ">Project</span> {
+  id: <span class="typ">number</span>;
+  name: <span class="typ">string</span>;
+  userId: <span class="typ">number</span>;      <span class="cmt">// ID del dueño del proyecto</span>
+  members: <span class="typ">ProjectMember</span>[];
+}
+
+<span class="kw">interface</span> <span class="typ">ProjectMember</span> {
+  id: <span class="typ">number</span>;
+  user: { id: <span class="typ">number</span>; name: <span class="typ">string</span>; email: <span class="typ">string</span> };
+}</code></pre>
+
+    <h3>User</h3>
+    <pre><code><span class="kw">interface</span> <span class="typ">User</span> {
+  id: <span class="typ">number</span>;
+  name: <span class="typ">string</span>;
+  email: <span class="typ">string</span>;
+}</code></pre>
+
+    <h3>Invitation (en Navbar)</h3>
+    <pre><code><span class="kw">interface</span> <span class="typ">Invitation</span> {
+  id: <span class="typ">number</span>;
+  project: {
+    id: <span class="typ">number</span>;
+    name: <span class="typ">string</span>;
+    user: { id: <span class="typ">number</span>; name: <span class="typ">string</span>; email: <span class="typ">string</span> };  <span class="cmt">// dueño del proyecto</span>
+  };
+}</code></pre>
+  </section>
+
+</main>
+
+<!-- SCROLL SPY -->
+<script>
+  const links = document.querySelectorAll('#sidebar a');
+  const sections = document.querySelectorAll('section[id], h2[id]');
+
+  function setActive() {
+    let current = '';
+    document.querySelectorAll('section[id]').forEach(s => {
+      if (window.scrollY >= s.offsetTop - 80) current = s.id;
+    });
+    links.forEach(l => {
+      l.classList.remove('active');
+      if (l.getAttribute('href') === '#' + current) l.classList.add('active');
+    });
+  }
+
+  window.addEventListener('scroll', setActive);
+  setActive();
+
+  links.forEach(link => {
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      const id = link.getAttribute('href').slice(1);
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+</script>
+
+</body>
+</html>
