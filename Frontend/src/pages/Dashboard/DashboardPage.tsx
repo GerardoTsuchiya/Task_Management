@@ -13,6 +13,7 @@ import DeleteTaskModal from "./DeleteTaskModal.tsx";
 import EditProjectModal from "./EditProjectModal.tsx";
 import DeleteProjectModal from "./DeleteProjectModal.tsx";
 import ProjectSidebar from "./ProjectSidebar.tsx";
+import ProjectCharts from "./ProjectCharts.tsx";
 
 interface Task {
   id: number;
@@ -36,7 +37,6 @@ interface DashboardPageProps {
 
 export default function DashboardPage({ user, onLogout }: DashboardPageProps) {
   const [projects, setProjects] = useState<Project[]>([]);
-  // Iniciamos en null para que "Todas las tareas" sea la vista por defecto
   const [activeProject, setActiveProject] = useState<Project | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [showModal, setShowModal] = useState(false);
@@ -53,7 +53,6 @@ export default function DashboardPage({ user, onLogout }: DashboardPageProps) {
     try {
       const projs = await api.get("/projects");
       setProjects(projs);
-      // REMOVIDO: Ya no forzamos la selección del primer proyecto de forma automática
       const allTasks = await api.get("/tasks");
       setTasks(allTasks);
     } catch (err) {
@@ -101,7 +100,6 @@ export default function DashboardPage({ user, onLogout }: DashboardPageProps) {
     setTasks(prev => prev.filter(t => t.projectId !== id));
 
     if (activeProject?.id === id) {
-      // Si eliminamos el proyecto en el que estábamos parados, volvemos a la vista general
       setActiveProject(null);
     }
 
@@ -205,7 +203,6 @@ export default function DashboardPage({ user, onLogout }: DashboardPageProps) {
     }
   }
 
-  // Filtrado lógico: si activeProject es null, filteredTasks toma TODO el array completo de tareas
   const filteredTasks = activeProject 
     ? tasks.filter((t) => t.projectId === activeProject.id)
     : tasks;
@@ -237,12 +234,13 @@ export default function DashboardPage({ user, onLogout }: DashboardPageProps) {
         <ProjectSidebar 
           projects={projects}
           activeProject={activeProject}
-          onSelectProject={setActiveProject} // Maneja perfectamente objetos del proyecto o null
+          tasks={tasks} 
+          onSelectProject={setActiveProject}
           onCreateProjectClick={() => setShowProjectModal(true)}
           onEditProjectClick={setEditingProject}
           onDeleteProjectClick={setProjectToDelete}
         />
-
+        
         <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "auto", background: COLORS.bg }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 24px 8px" }}>
             <span style={{ color: COLORS.textMuted, fontFamily: "'Sansation', sans-serif", fontSize: 18, fontWeight: 700 }}>
@@ -284,6 +282,12 @@ export default function DashboardPage({ user, onLogout }: DashboardPageProps) {
                 Sin tareas en este panel. Presiona + para agregar una.
               </p>
             )}
+
+            {activeProject && filteredTasks.length > 0 && (
+              <div style={{ marginTop: 24, maxWidth: 360, alignSelf: "flex-start", width: "100%" }}>
+                <ProjectCharts tasks={filteredTasks} isPieOnly={true} />
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -308,7 +312,13 @@ export default function DashboardPage({ user, onLogout }: DashboardPageProps) {
       )}
 
       {showModal && <NewTaskModal projectId={activeProject ? String(activeProject.id) : "0"} onClose={() => setShowModal(false)} onSave={handleSaveTask} />}
-      {showProjectModal && <NewProjectModal onClose={() => setShowProjectModal(false)} onSave={handleSaveProject} />}
+      
+      {showProjectModal && (
+        <NewProjectModal 
+          onClose={() => setShowProjectModal(false)} 
+          onSave={handleSaveProject} 
+        />
+      )}    
     </div>
   );
 }

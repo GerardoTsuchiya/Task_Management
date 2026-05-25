@@ -14,6 +14,21 @@ export default function App() {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
+    const resetAesthetic = () => {
+      document.documentElement.style.margin = "0";
+      document.documentElement.style.padding = "0";
+      document.documentElement.style.backgroundColor = "#040403";
+      
+      document.body.style.margin = "0";
+      document.body.style.padding = "0";
+      document.body.style.backgroundColor = "#040403";
+      document.body.style.minHeight = "100vh";
+      document.body.style.width = "100%";
+    };
+    resetAesthetic();
+  }, []);
+
+  useEffect(() => {
     async function checkSession() {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -44,21 +59,50 @@ export default function App() {
     setPage("login");
   }
 
-if (page === "loading") {
-    return <div style={{ color: "#fff", fontFamily: "'Sansation', sans-serif", textAlign: "center", marginTop: 40 }}>Cargando Infuse...</div>;
+  if (page === "loading") {
+    return (
+      <div 
+        style={{ 
+          position: "fixed",
+          inset: 0,
+          background: "#040403", 
+          color: "#fff", 
+          fontFamily: "'Sansation', sans-serif", 
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 16
+        }}
+      >
+        Cargando Infuse...
+      </div>
+    );
   }
 
-  if (page === "login") {
-    return <LoginPage onLoginSuccess={handleAuthSuccess} onGoRegister={() => setPage("register")} />;
-  }
+  return (
+    <div 
+      style={{ 
+        width: "100vw", 
+        minHeight: "100vh", 
+        backgroundColor: "#040403", 
+        margin: 0, 
+        padding: 0,
+        boxSizing: "border-box",
+        display: "flex",
+        flexDirection: "column"
+      }}
+    >
+      {page === "login" && (
+        <LoginPage onLoginSuccess={handleAuthSuccess} onGoRegister={() => setPage("register")} />
+      )}
 
-  if (page === "register") {
-    return <RegisterPage onRegisterSuccess={handleAuthSuccess} onGoLogin={() => setPage("login")} />;
-  }
+      {page === "register" && (
+        <RegisterPage onRegisterSuccess={handleAuthSuccess} onGoLogin={() => setPage("login")} />
+      )}
 
-  if (page === "dashboard") {
-    return <DashboardPage user={user} onLogout={handleLogout} />;
-  }
-
-  return null;
+      {page === "dashboard" && (
+        <DashboardPage user={user} onLogout={handleLogout} />
+      )}
+    </div>
+  );
 }
