@@ -5,6 +5,7 @@ import DashboardPage from "./pages/Dashboard/DashboardPage.tsx";
 import { api } from "./services/api.ts";
 
 interface User {
+  id: number;
   name: string;
   email: string;
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Pencil, Trash2, Layers, ChevronDown, Calendar } from "lucide-react"; 
+import { Pencil, Trash2, Layers, ChevronDown, Calendar, UserPlus } from "lucide-react";
 import { COLORS } from "../../constants/colors.ts";
 import { api } from "../../services/api.ts";
 
@@ -19,6 +19,8 @@ interface DetailedTask extends Task {
 interface Project {
   id: number;
   name: string;
+  userId: number;
+  members: { id: number; user: { id: number; name: string; email: string } }[];
 }
 
 function formatDateToLatam(dateStr?: string): string {
@@ -158,19 +160,21 @@ function SidebarTaskItem({ task }: { task: Task }) {
 interface ProjectSidebarRowProps {
   proj: Project;
   isActive: boolean;
-  projectTasks: Task[]; 
+  projectTasks: Task[];
   onClick: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onInvite: () => void;
 }
 
-function ProjectSidebarRow({ 
-  proj, 
-  isActive, 
-  projectTasks, 
-  onClick, 
-  onEdit, 
-  onDelete 
+function ProjectSidebarRow({
+  proj,
+  isActive,
+  projectTasks,
+  onClick,
+  onEdit,
+  onDelete,
+  onInvite,
 }: ProjectSidebarRowProps) {
   const [hovered, setHovered] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false); 
@@ -226,6 +230,15 @@ function ProjectSidebarRow({
 
         <div style={{ display: "flex", gap: 8, alignItems: "center", opacity: hovered ? 1 : 0, transition: "opacity 0.15s ease", flexShrink: 0 }}>
           <button
+            title="Invitar miembro"
+            onClick={(e) => { e.stopPropagation(); onInvite(); }}
+            style={{ background: "transparent", border: "none", color: COLORS.textMuted, cursor: "pointer", padding: 2, display: "flex" }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = COLORS.textMuted)}
+            onMouseLeave={(e) => (e.currentTarget.style.color = COLORS.textMuted)}
+          >
+            <UserPlus size={12} />
+          </button>
+          <button
             title="Editar Proyecto"
             onClick={(e) => { e.stopPropagation(); onEdit(); }}
             style={{ background: "transparent", border: "none", color: COLORS.textMuted, cursor: "pointer", padding: 2, display: "flex" }}
@@ -275,11 +288,12 @@ function ProjectSidebarRow({
 interface ProjectSidebarProps {
   projects: Project[];
   activeProject: Project | null;
-  tasks: Task[]; 
+  tasks: Task[];
   onSelectProject: (proj: Project | null) => void;
   onCreateProjectClick: () => void;
   onEditProjectClick: (proj: Project) => void;
   onDeleteProjectClick: (proj: Project) => void;
+  onInviteMemberClick: (proj: Project) => void;
 }
 
 export default function ProjectSidebar({
@@ -290,6 +304,7 @@ export default function ProjectSidebar({
   onCreateProjectClick,
   onEditProjectClick,
   onDeleteProjectClick,
+  onInviteMemberClick,
 }: ProjectSidebarProps) {
   return (
     <div
@@ -347,10 +362,11 @@ export default function ProjectSidebar({
             key={proj.id}
             proj={proj}
             isActive={activeProject?.id === proj.id}
-            projectTasks={projectTasks} 
+            projectTasks={projectTasks}
             onClick={() => onSelectProject(proj)}
             onEdit={() => onEditProjectClick(proj)}
             onDelete={() => onDeleteProjectClick(proj)}
+            onInvite={() => onInviteMemberClick(proj)}
           />
         );
       })}

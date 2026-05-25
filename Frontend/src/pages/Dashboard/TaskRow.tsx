@@ -8,8 +8,9 @@ interface Task {
   description?: string;
   priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
   status: "PENDING" | "IN_PROGRESS" | "COMPLETED";
-  dueDate?: string; 
+  dueDate?: string;
   projectId: number | null;
+  project?: { id: number; name: string } | null;
 }
 
 interface TaskRowProps {
@@ -102,15 +103,29 @@ export default function TaskRow({ task, onToggleStatus, onViewClick, onEditClick
         }}
       >
         <StatusCircle status={task.status} isOverdue={isOverdue} isRowHovered={isClickZoneHovered} />
-        <span style={{ 
-          color: titleColor, 
-          fontFamily: "'Sansation', sans-serif", fontSize: 14, 
-          overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textDecoration,
-          opacity: isClickZoneHovered ? 1 : 0.85,
-          transition: "opacity 0.2s ease"
-        }}>
-          {task.title} {isOverdue && <span style={{ fontSize: 11, opacity: 0.6 }}>(Vencida)</span>}
-        </span>
+        <div style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0, overflow: "hidden" }}>
+          <span style={{
+            color: titleColor,
+            fontFamily: "'Sansation', sans-serif", fontSize: 14,
+            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textDecoration,
+            opacity: isClickZoneHovered ? 1 : 0.85,
+            transition: "opacity 0.2s ease"
+          }}>
+            {task.title} {isOverdue && <span style={{ fontSize: 11, opacity: 0.6 }}>(Vencida)</span>}
+          </span>
+          {task.project && (
+            <span style={{
+              color: COLORS.textMuted,
+              fontFamily: "'Sansation', sans-serif",
+              fontSize: 11,
+              opacity: 0.6,
+              overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+              textDecoration: "none",
+            }}>
+              {task.project.name}
+            </span>
+          )}
+        </div>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: 0, width: "680px", flexShrink: 0 }}>
         

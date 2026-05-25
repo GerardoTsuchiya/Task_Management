@@ -12,6 +12,7 @@ import EditTaskModal from "./EditTaskModal.tsx";
 import DeleteTaskModal from "./DeleteTaskModal.tsx";
 import EditProjectModal from "./EditProjectModal.tsx";
 import DeleteProjectModal from "./DeleteProjectModal.tsx";
+import InviteMemberModal from "./InviteMemberModal.tsx";
 import ProjectSidebar from "./ProjectSidebar.tsx";
 import ProjectCharts from "./ProjectCharts.tsx";
 
@@ -21,17 +22,27 @@ interface Task {
   description?: string;
   priority: "LOW" | "MEDIUM" | "HIGH" | "URGENT";
   status: "PENDING" | "IN_PROGRESS" | "COMPLETED";
-  dueDate?: string; 
+  dueDate?: string;
   projectId: number | null;
+  userId?: number;
+  project?: { id: number; name: string } | null;
+  assignedTo?: { id: number; name: string; email: string } | null;
+}
+
+interface ProjectMember {
+  id: number;
+  user: { id: number; name: string; email: string };
 }
 
 interface Project {
   id: number;
   name: string;
+  userId: number;
+  members: ProjectMember[];
 }
 
 interface DashboardPageProps {
-  user: { name: string; email: string } | null;
+  user: { id: number; name: string; email: string } | null;
   onLogout: () => void;
 }
 
@@ -48,6 +59,8 @@ export default function DashboardPage({ user, onLogout }: DashboardPageProps) {
   
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
+  const [invitingProject, setInvitingProject] = useState<Project | null>(null);
+  const [filterAssignedToMe, setFilterAssignedToMe] = useState(false);
 
   async function loadData() {
     try {
@@ -114,7 +127,7 @@ export default function DashboardPage({ user, onLogout }: DashboardPageProps) {
     }
   }
 
-  async function handleSaveTask(taskData: { title: string; desc: string; priority: string; dueDate: string }) {
+  async function handleSaveTask(taskData: { title: string; desc: string; priority: string; dueDate: string; assignedToId?: number }) {
     const tempId = Date.now() * -1;
     const newTaskOptimista: Task = {
       id: tempId,
@@ -136,6 +149,7 @@ export default function DashboardPage({ user, onLogout }: DashboardPageProps) {
         dueDate: taskData.dueDate,
         status: "PENDING",
         projectId: activeProject ? Number(activeProject.id) : null,
+        assignedToId: taskData.assignedToId ?? null,
       });
       await loadData();
     } catch (err) {
@@ -203,9 +217,13 @@ export default function DashboardPage({ user, onLogout }: DashboardPageProps) {
     }
   }
 
-  const filteredTasks = activeProject 
+  const projectTasks = activeProject
     ? tasks.filter((t) => t.projectId === activeProject.id)
     : tasks;
+
+  const filteredTasks = filterAssignedToMe && user
+    ? projectTasks.filter((t) => t.assignedTo?.id === user.id)
+    : projectTasks;
 
   const todayStr = new Date().toISOString().split("T")[0]; 
 
@@ -227,7 +245,7 @@ export default function DashboardPage({ user, onLogout }: DashboardPageProps) {
 
   return (
     <div style={{ minHeight: "100vh", background: COLORS.bg, display: "flex", flexDirection: "column" }}>
-      <Navbar onLogout={onLogout} user={user} />
+      <Navbar onLogout={onLogout} user={user} onInvitationAccepted={loadData} />
 
       <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
         
@@ -239,6 +257,7 @@ export default function DashboardPage({ user, onLogout }: DashboardPageProps) {
           onCreateProjectClick={() => setShowProjectModal(true)}
           onEditProjectClick={setEditingProject}
           onDeleteProjectClick={setProjectToDelete}
+          onInviteMemberClick={setInvitingProject}
         />
         
         <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "auto", background: COLORS.bg }}>
@@ -246,7 +265,27 @@ export default function DashboardPage({ user, onLogout }: DashboardPageProps) {
             <span style={{ color: COLORS.textMuted, fontFamily: "'Sansation', sans-serif", fontSize: 18, fontWeight: 700 }}>
               {activeProject ? activeProject.name : "Todas las tareas"}
             </span>
-            <button onClick={() => setShowModal(true)} style={{ background: "transparent", border: "none", color: COLORS.textMuted, fontSize: 26, cursor: "pointer" }}>+</button>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <button
+                onClick={() => setFilterAssignedToMe((v) => !v)}
+                title="Filtrar por asignadas a mí"
+                style={{
+                  background: filterAssignedToMe ? COLORS.textMuted : "transparent",
+                  border: `1.5px solid ${COLORS.textMuted}`,
+                  borderRadius: 20,
+                  padding: "4px 14px",
+                  color: filterAssignedToMe ? COLORS.bg : COLORS.textMuted,
+                  fontFamily: "'Sansation', sans-serif",
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                Asignadas a mí
+              </button>
+              <button onClick={() => setShowModal(true)} style={{ background: "transparent", border: "none", color: COLORS.textMuted, fontSize: 26, cursor: "pointer" }}>+</button>
+            </div>
           </div>
 
           <div style={{ padding: "0 24px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
@@ -296,8 +335,15 @@ export default function DashboardPage({ user, onLogout }: DashboardPageProps) {
       {editingTask && <EditTaskModal task={editingTask} onClose={() => setEditingTask(null)} onSave={handleUpdateTask} />}
       {taskToDelete && <DeleteTaskModal task={taskToDelete} onClose={() => setTaskToDelete(null)} onConfirm={handleDeleteTask} />}
 
+      {invitingProject && (
+        <InviteMemberModal
+          project={invitingProject}
+          onClose={() => setInvitingProject(null)}
+        />
+      )}
+
       {editingProject && (
-        <EditProjectModal 
+        <EditProjectModal
           project={editingProject} 
           onClose={() => setEditingProject(null)} 
           onSave={handleUpdateProject} 
@@ -311,7 +357,15 @@ export default function DashboardPage({ user, onLogout }: DashboardPageProps) {
         />
       )}
 
-      {showModal && <NewTaskModal projectId={activeProject ? String(activeProject.id) : "0"} onClose={() => setShowModal(false)} onSave={handleSaveTask} />}
+      {showModal && (
+        <NewTaskModal
+          projectId={activeProject ? String(activeProject.id) : "0"}
+          isOwner={!!activeProject && activeProject.userId === user?.id}
+          projectMembers={activeProject?.members.filter(m => m.user.id !== user?.id) ?? []}
+          onClose={() => setShowModal(false)}
+          onSave={handleSaveTask}
+        />
+      )}
       
       {showProjectModal && (
         <NewProjectModal 

@@ -3,18 +3,28 @@ import { COLORS } from "../../constants/colors.ts";
 import OutlineBtn from "../../components/OutlineBtn.tsx";
 import Input from "../../components/Input.tsx";
 
-interface NewTaskModalProps {
-  projectId: string;
-  onClose: () => void;
-  onSave: (task: { title: string; desc: string; priority: string; dueDate: string }) => void;
+interface ProjectMember {
+  id: number;
+  user: { id: number; name: string; email: string };
 }
 
-export default function NewTaskModal({ onClose, onSave }: NewTaskModalProps) {
+interface NewTaskModalProps {
+  projectId: string;
+  isOwner?: boolean;
+  projectMembers?: ProjectMember[];
+  onClose: () => void;
+  onSave: (task: { title: string; desc: string; priority: string; dueDate: string; assignedToId?: number }) => void;
+}
+
+export default function NewTaskModal({ projectId, isOwner, projectMembers = [], onClose, onSave }: NewTaskModalProps) {
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [priority, setPriority] = useState("");
   const [dueDate, setDueDate] = useState("");
+  const [assignedToId, setAssignedToId] = useState<number | undefined>(undefined);
   const [error, setError] = useState("");
+
+  const showAssignField = projectId !== "0" && isOwner && projectMembers.length > 0;
 
   function handleSave() {
     if (title.trim().length < 2) {
@@ -29,7 +39,7 @@ export default function NewTaskModal({ onClose, onSave }: NewTaskModalProps) {
       setError("Selecciona una prioridad.");
       return;
     }
-    onSave({ title, desc, priority, dueDate });
+    onSave({ title, desc, priority, dueDate, assignedToId });
     onClose();
   }
 
@@ -146,6 +156,35 @@ export default function NewTaskModal({ onClose, onSave }: NewTaskModalProps) {
               <button type="button" style={priorityBtnStyle("URGENT", "#D03636")} onClick={() => setPriority("URGENT")}>Urgente</button>
             </div>
           </div>
+
+          {showAssignField && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, width: "100%", alignItems: "flex-start" }}>
+              <label style={labelStyle}>Asignar a</label>
+              <select
+                value={assignedToId ?? ""}
+                onChange={(e) => setAssignedToId(e.target.value ? Number(e.target.value) : undefined)}
+                style={{
+                  width: "100%",
+                  background: COLORS.inputBg,
+                  border: "none",
+                  borderRadius: 6,
+                  padding: "11px 16px",
+                  color: assignedToId ? COLORS.inputText : COLORS.textMuted,
+                  fontSize: 14,
+                  fontFamily: "'Sansation', sans-serif",
+                  outline: "none",
+                  cursor: "pointer",
+                }}
+              >
+                <option value="">Sin asignar</option>
+                {projectMembers.map((m) => (
+                  <option key={m.id} value={m.user.id}>
+                    {m.user.name} ({m.user.email})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
 
         {error && <p style={{ color: "#D03636", fontSize: 13, fontFamily: "'Sansation', sans-serif", margin: 0, textAlign: "center", fontWeight: 700 }}>{error}</p>}

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, TaskStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTaskDto } from './dto/create-task.dto';
@@ -18,14 +18,23 @@ export class TasksService {
   }
 
   async create(userId: number, createTaskDto: CreateTaskDto) {
+    let assignedToId = createTaskDto.assignedToId ?? null;
+
     if (createTaskDto.projectId) {
       await this.ensureProjectAccessibleByUser(userId, createTaskDto.projectId);
 
       if (createTaskDto.assignedToId) {
+        await this.ensureUserIsProjectOwner(userId, createTaskDto.projectId);
         await this.ensureUserIsMemberOfProject(
           createTaskDto.assignedToId,
           createTaskDto.projectId,
         );
+      } else {
+        const isOwner = await this.prisma.project.findFirst({
+          where: { id: createTaskDto.projectId, userId },
+          select: { id: true },
+        });
+        if (!isOwner) assignedToId = userId;
       }
     }
 
@@ -42,7 +51,7 @@ export class TasksService {
         completedAt: completionData.completedAt,
         userId,
         projectId: createTaskDto.projectId ?? null,
-        assignedToId: createTaskDto.assignedToId ?? null,
+        assignedToId,
       },
       include: this.getTaskInclude(),
     });
@@ -52,7 +61,19 @@ export class TasksService {
     const task = await this.prisma.task.findFirst({
       where: {
         id,
-        OR: [{ userId }, { assignedToId: userId }],
+        OR: [
+          { userId },
+          { assignedToId: userId },
+          {
+            projectId: { not: null },
+            project: {
+              OR: [
+                { userId },
+                { members: { some: { userId, status: 'accepted' } } },
+              ],
+            },
+          },
+        ],
       },
       include: this.getTaskInclude(),
     });
@@ -72,8 +93,11 @@ export class TasksService {
       await this.ensureProjectAccessibleByUser(userId, updateTaskDto.projectId);
     }
 
-    if (updateTaskDto.assignedToId && projectId) {
-      await this.ensureUserIsMemberOfProject(updateTaskDto.assignedToId, projectId);
+    if (updateTaskDto.assignedToId !== undefined && projectId) {
+      await this.ensureUserIsProjectOwner(userId, projectId);
+      if (updateTaskDto.assignedToId !== null) {
+        await this.ensureUserIsMemberOfProject(updateTaskDto.assignedToId, projectId);
+      }
     }
 
     const completionData = this.buildCompletionData({
@@ -215,6 +239,14 @@ export class TasksService {
     if (!project) throw new NotFoundException('Project not found');
   }
 
+  private async ensureUserIsProjectOwner(userId: number, projectId: number) {
+    const project = await this.prisma.project.findFirst({
+      where: { id: projectId, userId },
+      select: { id: true },
+    });
+    if (!project) throw new ForbiddenException('Only the project owner can assign tasks to members');
+  }
+
   private async ensureUserIsMemberOfProject(userId: number, projectId: number) {
     const project = await this.prisma.project.findFirst({
       where: {
@@ -234,7 +266,19 @@ export class TasksService {
     query: TaskQueryDto,
   ): Prisma.TaskWhereInput {
     const where: Prisma.TaskWhereInput = {
-      OR: [{ userId }, { assignedToId: userId }],
+      OR: [
+        { userId },
+        { assignedToId: userId },
+        {
+          projectId: { not: null },
+          project: {
+            OR: [
+              { userId },
+              { members: { some: { userId, status: 'accepted' } } },
+            ],
+          },
+        },
+      ],
     };
 
     if (query.search) {

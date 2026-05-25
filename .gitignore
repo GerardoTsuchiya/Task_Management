@@ -32,3 +32,7 @@ Thumbs.db
 # Generated files
 generated/
 **/generated/
+
+# Claude / AI tools
+.claude/
+.superpowers/
