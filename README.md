@@ -1,6 +1,6 @@
 # Infuse — Task Management App
 
-Infuse es una aplicación web para la gestión de tareas y proyectos. Permite a los usuarios crear proyectos, organizar tareas con prioridades y estados, asignar subtareas, etiquetar y recibir notificaciones — todo en un solo lugar. Desarrollada como proyecto académico para la Universidad Autónoma de Baja California (UABC).
+Infuse es una aplicación web para la gestión de tareas y proyectos. Permite a los usuarios crear proyectos, organizar tareas con prioridades y estados, y recibir notificaciones — todo en un solo lugar. Desarrollada como proyecto académico para la Universidad Autónoma de Baja California (UABC).
 
 ---
 
