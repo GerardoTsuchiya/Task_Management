@@ -1,98 +1,171 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Infuse — Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+API REST del proyecto Infuse, construida con [NestJS](https://nestjs.com/) y [Prisma ORM](https://www.prisma.io/) sobre PostgreSQL. Expone endpoints para autenticación, proyectos, tareas, subtareas, etiquetas y notificaciones. Incluye documentación interactiva con Swagger.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+## Tecnologías
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+| Herramienta | Versión | Propósito |
+|-------------|---------|-----------|
+| Node.js | ≥ 18 | Entorno de ejecución |
+| NestJS | ^11 | Framework principal |
+| TypeScript | ^5.7 | Lenguaje |
+| Prisma ORM | ^7 | Acceso a base de datos |
+| PostgreSQL | — | Base de datos |
+| Passport + JWT | — | Autenticación |
+| Bcrypt | ^6 | Hash de contraseñas |
+| class-validator | ^0.15 | Validación de DTOs |
+| Swagger | ^11 | Documentación de API |
 
-## Project setup
+---
 
-```bash
-$ npm install
-```
+## Requisitos previos
 
-## Compile and run the project
+- [Node.js](https://nodejs.org/) v18 o superior
+- [npm](https://www.npmjs.com/) v9 o superior
+- Una instancia de PostgreSQL accesible (local o Supabase)
+
+---
+
+## Instalación
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+cd Backend
+npm install
 ```
 
-## Run tests
+---
+
+## Variables de entorno
+
+Crea un archivo `.env` en la carpeta `Backend/` con las siguientes variables:
+
+```env
+# Cadena de conexión a PostgreSQL
+DATABASE_URL="postgresql://usuario:contraseña@localhost:5432/infuse_db"
+
+# Secreto para firmar los tokens JWT
+JWT_SECRET="tu_secreto_super_seguro"
+
+# Puerto del servidor (opcional, por defecto 3000)
+PORT=3000
+```
+
+---
+
+## Comandos disponibles
 
 ```bash
-# unit tests
-$ npm run test
+# Instalar dependencias
+npm install
 
-# e2e tests
-$ npm run test:e2e
+# Desarrollo con hot-reload
+npm run start:dev
 
-# test coverage
-$ npm run test:cov
+# Producción
+npm run start:prod
+
+# Compilar
+npm run build
+
+# Pruebas unitarias
+npm run test
+
+# Pruebas end-to-end
+npm run test:e2e
+
+# Cobertura de pruebas
+npm run test:cov
+
+# Linting y formato
+npm run lint
+npm run format
 ```
 
-## Deployment
+---
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+## Prisma — Base de datos
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+# Aplicar migraciones
+npx prisma migrate dev
+
+# Generar cliente (después de cambiar el schema)
+npx prisma generate
+
+# Explorador visual de la BD
+npx prisma studio
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+---
 
-## Resources
+## Documentación de la API (Swagger)
 
-Check out a few resources that may come in handy when working with NestJS:
+Con el servidor corriendo, accede a la documentación interactiva en:
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```
+http://localhost:3000/api/docs
+```
 
-## Support
+Desde ahí puedes explorar todos los endpoints, ver los esquemas de request/response y probar llamadas autenticadas con Bearer JWT.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+---
 
-## Stay in touch
+## Módulos
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+| Módulo | Descripción |
+|--------|-------------|
+| `auth` | Registro, login y validación de sesión (`/auth/register`, `/auth/login`, `/auth/me`) |
+| `projects` | CRUD de proyectos e invitación de miembros |
+| `tasks` | CRUD de tareas con prioridad, estado, fechas límite y asignación |
+| `subtasks` | Subtareas anidadas dentro de una tarea |
+| `labels` | Etiquetas personalizadas por usuario para clasificar tareas |
+| `notifications` | Notificaciones de eventos (invitaciones, cambios de estado, etc.) |
+| `prisma` | Servicio global de conexión a la base de datos |
 
-## License
+---
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## Estructura del proyecto
+
+```
+Backend/
+├── src/
+│   ├── auth/              # Autenticación JWT
+│   ├── projects/          # Módulo de proyectos
+│   ├── tasks/             # Módulo de tareas
+│   ├── subtasks/          # Módulo de subtareas
+│   ├── labels/            # Módulo de etiquetas
+│   ├── notifications/     # Módulo de notificaciones
+│   ├── prisma/            # Servicio de base de datos
+│   ├── common/            # Decoradores y tipos compartidos
+│   ├── app.module.ts      # Módulo raíz
+│   └── main.ts            # Punto de entrada
+├── prisma/
+│   └── schema.prisma      # Esquema de la base de datos
+├── test/                  # Pruebas end-to-end
+├── .env                   # Variables de entorno (no incluir en git)
+└── package.json
+```
+
+---
+
+## Modelos de datos
+
+```
+User          → Usuarios del sistema
+Project       → Proyectos creados por un usuario
+ProjectMember → Miembros invitados a un proyecto (rol + estado)
+Task          → Tareas con prioridad (LOW/MEDIUM/HIGH/URGENT)
+              →   y estado (PENDING/IN_PROGRESS/COMPLETED)
+Subtask       → Subtareas dentro de una tarea
+Label         → Etiquetas personalizadas por usuario
+TaskLabel     → Relación N:M entre tareas y etiquetas
+Notification  → Notificaciones de eventos para un usuario
+```
+
+---
+
+## Licencia
+
+Proyecto académico — UABC. Uso educativo.
